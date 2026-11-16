@@ -1,129 +1,232 @@
-// Gestión del Mapa Leaflet y Marcadores
+// Gestión del Mapa Leaflet y Marcadores con Clustering (leaflet.markercluster)
 class ChargerMap {
   constructor() {
     this.map = null;
     this.markers = new Map();
-    this.markerCluster = null;
-    this.currentTileLayer = null;
+    this.clusterGroup = null;
+    this.currentTileLayers = [];
     this.userLocationMarker = null;
+    this.currentLayerType = 'osm';
 
-    // Capas de mapas para modo oscuro y claro
-    this.tileLayers = {
-      dark: {
-        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    // Capas de mapa idénticas a ZBE-MAP
+    this.layersConfig = {
+      osm: {
+        type: 'single',
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         options: {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+          subdomains: ['a', 'b', 'c'],
           maxZoom: 19
         }
       },
-      light: {
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      dark: {
+        type: 'esri-dark',
+        base: 'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        ref: 'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        optionsBase: {
+          attribution: '&copy; Esri, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+          maxZoom: 16
+        },
+        optionsRef: {
+          maxZoom: 16
+        }
+      },
+      sat: {
+        type: 'single',
+        url: 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         options: {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+          maxZoom: 18
+        }
+      },
+      carto: {
+        type: 'single',
+        url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        options: {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors &copy; CARTO',
           subdomains: 'abcd',
-          maxZoom: 19
+          maxZoom: 20
         }
       }
     };
   }
 
   init(containerId = 'map', initialTheme = 'dark') {
-    // Centro inicial: Madrid / España
+    // Centro inicial: Madrid / España con maxZoom definido para MarkerCluster
     this.map = L.map(containerId, {
       center: [40.4168, -3.7038],
       zoom: 6,
-      zoomControl: false
+      minZoom: 4,
+      maxZoom: 19,
+      zoomControl: false,
+      preferCanvas: true
     });
 
-    // Añadir control de zoom en esquina superior derecha
+    // Control de zoom en esquina superior derecha
     L.control.zoom({ position: 'topright' }).addTo(this.map);
 
-    this.setTheme(initialTheme);
+    // 1. Inicializar primero la capa base para que MarkerCluster disponga del maxZoom
+    const defaultLayer = initialTheme === 'dark' ? 'dark' : 'osm';
+    this.setLayer(defaultLayer);
+
+    // 2. Inicializar Cluster Group con soporte para 12.000+ marcadores
+    this.initClusterGroup();
+  }
+
+  initClusterGroup() {
+    this.clusterGroup = L.markerClusterGroup({
+      chunkedLoading: true,
+      chunkInterval: 100,
+      chunkDelay: 50,
+      maxClusterRadius: 65,
+      spiderfyOnMaxZoom: true,
+      disableClusteringAtZoom: 18,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        let sizeClass = 'small';
+        let sizePx = 36;
+        if (count >= 100) {
+          sizeClass = 'large';
+          sizePx = 48;
+        } else if (count >= 20) {
+          sizeClass = 'medium';
+          sizePx = 42;
+        }
+
+        const displayCount = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count;
+
+        return L.divIcon({
+          html: `<div class="ev-cluster-bubble ${sizeClass}"><span>${displayCount}</span></div>`,
+          className: 'ev-custom-cluster-icon',
+          iconSize: L.point(sizePx, sizePx),
+          iconAnchor: L.point(sizePx / 2, sizePx / 2)
+        });
+      }
+    });
+
+    this.map.addLayer(this.clusterGroup);
+  }
+
+  setLayer(layerKey) {
+    this.currentTileLayers.forEach(layer => {
+      try {
+        this.map.removeLayer(layer);
+      } catch (e) {}
+    });
+    this.currentTileLayers = [];
+
+    const config = this.layersConfig[layerKey] || this.layersConfig.osm;
+    this.currentLayerType = layerKey;
+
+    if (config.type === 'esri-dark') {
+      const darkBase = L.tileLayer(config.base, config.optionsBase).addTo(this.map);
+      const darkRef = L.tileLayer(config.ref, config.optionsRef).addTo(this.map);
+      this.currentTileLayers.push(darkBase, darkRef);
+    } else {
+      const layer = L.tileLayer(config.url, config.options).addTo(this.map);
+      this.currentTileLayers.push(layer);
+    }
+
+    document.querySelectorAll('.map-layer-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.layer === layerKey);
+    });
   }
 
   setTheme(theme) {
-    if (this.currentTileLayer) {
-      this.map.removeLayer(this.currentTileLayer);
+    if (theme === 'dark') {
+      this.setLayer('dark');
+    } else {
+      this.setLayer('osm');
     }
-    const layerConfig = this.tileLayers[theme] || this.tileLayers.dark;
-    this.currentTileLayer = L.tileLayer(layerConfig.url, layerConfig.options).addTo(this.map);
   }
 
   createCustomIcon(station) {
-    const isUltra = station.powerKw >= 100;
-    const isFast = station.powerKw >= 50 && station.powerKw < 100;
-    const statusColor = station.status === 'available' ? '#10b981' : station.status === 'busy' ? '#ef4444' : '#f59e0b';
-    const statusText = station.status === 'available' ? 'Disp' : station.status === 'busy' ? 'Ocup' : 'Mant';
+    const power = station.potencia_max_kw || 0;
+    const isUltra = power >= 150;
+    const isFast = power >= 50 && power < 150;
+    const isSemi = power >= 22 && power < 50;
+
+    const powerLabel = power >= 1 ? `${Math.round(power)}k` : 'AC';
+    const tierClass = isUltra ? 'ultra' : isFast ? 'fast' : isSemi ? 'semi' : 'normal';
 
     const html = `
-      <div class="custom-marker ${station.status}">
-        <div class="marker-pin ${isUltra ? 'ultra' : isFast ? 'fast' : 'normal'}">
+      <div class="custom-marker" title="${station.nombre} - ${station.potencia_max_kw} kW">
+        <div class="marker-pin ${tierClass}">
           <svg class="marker-bolt" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
-          <span class="marker-power">${station.powerKw}k</span>
+          <span class="marker-power">${powerLabel}</span>
         </div>
-        <span class="marker-status-dot" style="background:${statusColor};" title="${statusText}"></span>
       </div>
     `;
 
     return L.divIcon({
       html: html,
       className: 'ev-leaflet-marker',
-      iconSize: [44, 48],
-      iconAnchor: [22, 48],
-      popupAnchor: [0, -45]
+      iconSize: [40, 44],
+      iconAnchor: [20, 44],
+      popupAnchor: [0, -42]
     });
   }
 
   renderStations(stations, onSelectStation) {
-    // Limpiar marcadores anteriores
-    this.markers.forEach(marker => this.map.removeLayer(marker));
+    if (!this.clusterGroup) return;
+
+    this.clusterGroup.clearLayers();
     this.markers.clear();
+
+    const markersToAdd = [];
 
     stations.forEach(station => {
       const icon = this.createCustomIcon(station);
-      const marker = L.marker([station.lat, station.lng], { icon }).addTo(this.map);
+      const marker = L.marker([station.lat, station.lng], { icon });
 
-      const statusBadge = station.status === 'available' 
-        ? '<span class="badge-status available">● Disponible</span>' 
-        : station.status === 'busy' 
-          ? '<span class="badge-status busy">● Ocupado</span>' 
-          : '<span class="badge-status maintenance">● Mantenimiento</span>';
+      const power = station.potencia_max_kw || 0;
+      const isUltra = power >= 150;
+      const isFast = power >= 50 && power < 150;
 
-      const connectorsHtml = station.connectors.map(c => `<span class="badge-connector">${c}</span>`).join(' ');
+      const powerBadge = isUltra 
+        ? '<span class="badge-tier ultra">Ultrarrápida (≥150 kW)</span>'
+        : isFast 
+          ? '<span class="badge-tier fast">Rápida (50-149 kW)</span>'
+          : '<span class="badge-tier normal">Semi-rápida / Lenta</span>';
+
+      const connectorsHtml = (station.conectores || []).map(c => `<span class="badge-connector">${c}</span>`).join(' ');
+      const typesHtml = (station.tipos_carga || []).map(t => `<span class="badge-charge-type">${t}</span>`).join(' ');
 
       const popupContent = `
         <div class="station-popup">
           <div class="popup-header">
-            <div class="popup-operator">${station.operator}</div>
-            ${statusBadge}
+            <div class="popup-operator">${station.operador}</div>
+            ${powerBadge}
           </div>
-          <h3 class="popup-title">${station.name}</h3>
-          <p class="popup-address"><i class="fas fa-location-dot"></i> ${station.address}, <strong>${station.city}</strong></p>
+          <h3 class="popup-title">${station.nombre}</h3>
+          <p class="popup-address"><i class="fas fa-location-dot"></i> ${station.direccion ? station.direccion + ', ' : ''}<strong>${station.municipio}</strong> (${station.provincia})</p>
           
           <div class="popup-specs-grid">
             <div class="spec-item">
               <span class="spec-label">Potencia máx.</span>
-              <span class="spec-val highlight">${station.powerKw} kW</span>
+              <span class="spec-val highlight">${station.potencia_max_kw} kW</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">Tarifa aprox.</span>
-              <span class="spec-val">${station.pricePerKwh.toFixed(2)} €/kWh</span>
+              <span class="spec-val">${station.precio_estimado ? station.precio_estimado.toFixed(2) + ' €/kWh' : '0.45 €/kWh'}</span>
             </div>
             <div class="spec-item">
-              <span class="spec-label">Disponibles</span>
-              <span class="spec-val">${station.availablePorts} de ${station.totalPorts}</span>
+              <span class="spec-label">Puestos / Conectores</span>
+              <span class="spec-val">${station.num_conectores} conector${station.num_conectores > 1 ? 'es' : ''}</span>
             </div>
             <div class="spec-item">
-              <span class="spec-label">Valoración</span>
-              <span class="spec-val">★ ${station.rating}</span>
+              <span class="spec-label">Horario</span>
+              <span class="spec-val" style="font-size:0.75rem;">${station.horario && station.horario !== 'No especificado' ? 'Disponible' : '24 horas'}</span>
             </div>
           </div>
 
           <div class="popup-connectors">
             ${connectorsHtml}
+            ${typesHtml}
           </div>
 
           <div class="popup-actions">
@@ -148,14 +251,23 @@ class ChargerMap {
       });
 
       this.markers.set(station.id, marker);
+      markersToAdd.push(marker);
     });
+
+    this.clusterGroup.addLayers(markersToAdd);
   }
 
   focusStation(stationId) {
     const marker = this.markers.get(stationId);
-    if (marker) {
+    if (!marker) return;
+
+    if (this.clusterGroup.hasLayer(marker)) {
+      this.clusterGroup.zoomToShowLayer(marker, () => {
+        marker.openPopup();
+      });
+    } else {
       const latLng = marker.getLatLng();
-      this.map.flyTo(latLng, 14, { duration: 1.2 });
+      this.map.flyTo(latLng, 15, { duration: 1 });
       marker.openPopup();
     }
   }
@@ -183,8 +295,9 @@ class ChargerMap {
 
   fitAll() {
     if (this.markers.size === 0) return;
-    const group = new L.featureGroup(Array.from(this.markers.values()));
-    this.map.fitBounds(group.getBounds().pad(0.1));
+    if (this.clusterGroup && this.clusterGroup.getLayers().length > 0) {
+      this.map.fitBounds(this.clusterGroup.getBounds().pad(0.08));
+    }
   }
 }
 

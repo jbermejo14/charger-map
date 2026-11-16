@@ -16,6 +16,10 @@
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+
   <!-- Estilos Personalizados Naranja y Negro -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -69,32 +73,48 @@
           <!-- Búsqueda por texto -->
           <div class="search-input-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Buscar por ciudad, calle, operador o nombre...">
+            <input type="text" id="searchInput" placeholder="Buscar por ciudad, municipio, calle, operador...">
             <button class="clear-btn" id="clearSearchBtn" title="Limpiar"><i class="fas fa-times"></i></button>
           </div>
 
-          <!-- Filtro rápido por potencia -->
+          <!-- Filtro rápido por potencia mínima -->
+          <div class="filter-section-title-sm">Potencia mínima:</div>
           <div class="filter-row-chips">
-            <button class="power-filter-btn active" data-power="all">Todas</button>
-            <button class="power-filter-btn" data-power="ultra">
-              <i class="fas fa-bolt"></i> Ultra (>100 kW)
+            <button class="power-filter-btn active" data-min-power="0">Todas</button>
+            <button class="power-filter-btn" data-min-power="22">
+              <i class="fas fa-plug"></i> ≥ 22 kW Semi-rápida
             </button>
-            <button class="power-filter-btn" data-power="fast">
-              <i class="fas fa-bolt"></i> Rápida (50-100 kW)
+            <button class="power-filter-btn" data-min-power="50">
+              <i class="fas fa-bolt"></i> ≥ 50 kW Rápida
             </button>
-            <button class="power-filter-btn" data-power="normal">
-              <i class="fas fa-plug"></i> Normal (≤22 kW)
+            <button class="power-filter-btn" data-min-power="150">
+              <i class="fas fa-bolt"></i> ≥ 150 kW Ultrarrápida
             </button>
           </div>
 
-          <!-- Filtros desplegables -->
+          <!-- Filtros desplegables: Provincia y Municipio -->
+          <div class="filter-dropdowns-row">
+            <div class="select-wrapper">
+              <select id="provinciaSelect" title="Filtrar por provincia">
+                <option value="all">Todas las Provincias</option>
+              </select>
+            </div>
+            <div class="select-wrapper">
+              <select id="municipioSelect" title="Filtrar por municipio">
+                <option value="all">Todos los Municipios</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filtros desplegables: Conector y Operador -->
           <div class="filter-dropdowns-row">
             <div class="select-wrapper">
               <select id="connectorSelect" title="Filtrar por conector">
                 <option value="all">Todos los conectores</option>
-                <option value="CCS2">CCS2 (Combo)</option>
-                <option value="Tipo 2">Tipo 2 (Mennekes)</option>
+                <option value="Tipo 2 (Mennekes)">Tipo 2 (Mennekes)</option>
+                <option value="CCS2 (Combo)">CCS2 (Combo)</option>
                 <option value="CHAdeMO">CHAdeMO</option>
+                <option value="Schuko (Doméstico)">Schuko (Doméstico)</option>
               </select>
             </div>
             <div class="select-wrapper">
@@ -104,19 +124,26 @@
             </div>
           </div>
 
-          <!-- Checkbox solo disponibles y contador -->
-          <div class="filter-checkbox-row">
-            <label class="checkbox-label">
-              <input type="checkbox" id="onlyAvailableCheck">
-              <span>Solo disponibles ahora</span>
-            </label>
-            <span class="results-count" id="stationsCountBadge">Cargando...</span>
+          <!-- Resumen contador y estado -->
+          <div class="filter-status-bar">
+            <span class="results-count" id="stationsCountBadge">Cargando catálogo...</span>
+            <button class="btn-reset-filters" id="resetFiltersBtn" title="Restablecer filtros">
+              <i class="fas fa-rotate-left"></i> Limpiar
+            </button>
           </div>
         </div>
 
-        <!-- Lista scrollable de tarjetas -->
+        <!-- Lista scrollable de tarjetas con paginación -->
         <div class="stations-list-scroll" id="stationsList">
           <!-- Generado dinámicamente con JS -->
+        </div>
+
+        <!-- Botón Cargar Más -->
+        <div class="pagination-footer hidden" id="paginationFooter">
+          <button class="btn-load-more" id="loadMoreBtn">
+            <i class="fas fa-arrow-down"></i> Cargar más estaciones (+30)
+          </button>
+          <div class="pagination-info" id="paginationInfo"></div>
         </div>
       </section>
 
@@ -320,6 +347,14 @@
           <i class="fas fa-expand"></i>
           <span>Ver Todo</span>
         </button>
+
+        <!-- SELECTOR DE CAPAS ESTILO ZBE-MAP -->
+        <div class="map-layer-selector">
+          <button class="map-layer-btn active" data-layer="osm" title="OpenStreetMap">OSM</button>
+          <button class="map-layer-btn" data-layer="dark" title="Modo Oscuro Canvas">Oscuro</button>
+          <button class="map-layer-btn" data-layer="sat" title="Satélite">Satélite</button>
+          <button class="map-layer-btn" data-layer="carto" title="CARTO Minimal">CARTO</button>
+        </div>
       </div>
 
       <!-- LEYENDA DEL MAPA -->
@@ -346,6 +381,9 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
   <!-- Scripts de la Aplicación -->
   <script src="js/data.js"></script>

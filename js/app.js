@@ -1,32 +1,50 @@
-// Lógica principal de la aplicación
+// Lógica principal de la aplicación con dataset real completo de España
 class App {
   constructor() {
     this.currentTheme = localStorage.getItem('ev_theme') || 'dark';
-    this.stations = [...EV_DATABASE.stations];
-    this.filteredStations = [...this.stations];
+    this.stations = [];
+    this.filteredStations = [];
     this.selectedStationForCalc = null;
     this.activeTab = 'stations'; // 'stations' o 'calculator'
 
+    // Paginación para el listado lateral (DOM ligero)
+    this.pageSize = 30;
+    this.displayedCount = 30;
+
     this.filters = {
       search: '',
-      powerType: 'all',
+      minPower: 0, // 0 (Todas), 22, 50, 150
+      provincia: 'all',
+      municipio: 'all',
       connector: 'all',
-      onlyAvailable: false,
       operator: 'all'
     };
   }
 
-  init() {
+  async init() {
     this.applyTheme(this.currentTheme);
     chargerMap.init('map', this.currentTheme);
 
     this.setupEventListeners();
     this.populateVehicleSelect();
+
+    // Actualizar indicador de carga
+    const countBadge = document.getElementById('stationsCountBadge');
+    if (countBadge) countBadge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando catálogo real...';
+
+    // Cargar dataset completo de España (12.100+ estaciones)
+    this.stations = await EV_DATABASE.loadStations();
+    this.filteredStations = [...this.stations];
+
+    this.populateProvinceFilter();
     this.populateOperatorFilter();
+    this.updateMunicipioFilter();
+
+    // Renderizar mapa y listado
     this.renderStationsList();
     this.updateMapMarkers();
 
-    // Iniciar cálculo por defecto con el primer coche
+    // Iniciar cálculo por defecto con el primer vehículo
     this.onVehicleChange();
     this.runCalculation();
   }
@@ -39,7 +57,6 @@ class App {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('ev_theme', theme);
 
-    // Actualizar icono del botón
     const themeIcon = document.getElementById('themeIcon');
     const themeText = document.getElementById('themeText');
     if (themeIcon) {
@@ -71,7 +88,7 @@ class App {
       this.toggleTheme();
     });
 
-    // Pestañas móviles o selector de paneles
+    // Pestañas (Puntos de recarga / Calculadora)
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const tab = e.currentTarget.dataset.tab;
@@ -79,11 +96,15 @@ class App {
       });
     });
 
-    // Búsqueda y filtros
+    // Búsqueda de texto con debounce ligero
+    let searchTimeout;
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', (e) => {
-      this.filters.search = e.target.value.toLowerCase().trim();
-      this.applyFilters();
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        this.filters.search = e.target.value.toLowerCase().trim();
+        this.applyFilters();
+      }, 250);
     });
 
     const clearSearchBtn = document.getElementById('clearSearchBtn');
@@ -95,33 +116,62 @@ class App {
       });
     }
 
-    // Botones de filtro de potencia
+    // Botones de filtro de potencia mínima (Todas, ≥22, ≥50, ≥150 kW)
     document.querySelectorAll('.power-filter-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.power-filter-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
-        this.filters.powerType = e.currentTarget.dataset.power;
+        this.filters.minPower = parseFloat(e.currentTarget.dataset.minPower) || 0;
         this.applyFilters();
       });
     });
 
-    // Filtro conector
+    // Filtro Provincia
+    const provinciaSelect = document.getElementById('provinciaSelect');
+    if (provinciaSelect) {
+      provinciaSelect.addEventListener('change', (e) => {
+        this.filters.provincia = e.target.value;
+        this.updateMunicipioFilter();
+        this.applyFilters();
+      });
+    }
+
+    // Filtro Municipio
+    const municipioSelect = document.getElementById('municipioSelect');
+    if (municipioSelect) {
+      municipioSelect.addEventListener('change', (e) => {
+        this.filters.municipio = e.target.value;
+        this.applyFilters();
+      });
+    }
+
+    // Filtro Conector
     document.getElementById('connectorSelect').addEventListener('change', (e) => {
       this.filters.connector = e.target.value;
       this.applyFilters();
     });
 
-    // Filtro operador
+    // Filtro Operador
     document.getElementById('operatorSelect').addEventListener('change', (e) => {
       this.filters.operator = e.target.value;
       this.applyFilters();
     });
 
-    // Checkbox solo disponibles
-    document.getElementById('onlyAvailableCheck').addEventListener('change', (e) => {
-      this.filters.onlyAvailable = e.target.checked;
-      this.applyFilters();
-    });
+    // Botón Resetear Filtros
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', () => {
+        this.resetAllFilters();
+      });
+    }
+
+    // Botón Cargar Más Estaciones
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener('click', () => {
+        this.loadMoreStations();
+      });
+    }
 
     // Botón mi ubicación
     document.getElementById('locateBtn').addEventListener('click', () => {
@@ -131,6 +181,14 @@ class App {
     // Botón ajustar vista del mapa
     document.getElementById('fitBoundsBtn').addEventListener('click', () => {
       chargerMap.fitAll();
+    });
+
+    // Selector de capas del mapa (como en ZBE-MAP: OSM, Oscuro, Satélite, CARTO)
+    document.querySelectorAll('.map-layer-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const layer = e.currentTarget.dataset.layer;
+        chargerMap.setLayer(layer);
+      });
     });
 
     // Calculadora: cambio de vehículo
@@ -191,7 +249,7 @@ class App {
       radio.addEventListener('change', () => this.runCalculation());
     });
 
-    // Limpiar estación seleccionada en calculadora
+    // Limpiar estación vinculada en calculadora
     const clearSelectedStationBtn = document.getElementById('clearSelectedStationBtn');
     if (clearSelectedStationBtn) {
       clearSelectedStationBtn.addEventListener('click', () => {
@@ -220,58 +278,136 @@ class App {
   }
 
   /* ========================================================
-     FILTRADO Y LISTADO DE ESTACIONES
+     FILTRADO Y LISTADO DE ESTACIONES REALES
   ======================================================== */
+  populateProvinceFilter() {
+    const provinciaSelect = document.getElementById('provinciaSelect');
+    if (!provinciaSelect) return;
+
+    provinciaSelect.innerHTML = '<option value="all">Todas las Provincias</option>';
+    const provincias = Array.from(new Set(this.stations.map(s => s.provincia).filter(Boolean))).sort();
+    
+    provincias.forEach(prov => {
+      const opt = document.createElement('option');
+      opt.value = prov;
+      opt.textContent = prov;
+      provinciaSelect.appendChild(opt);
+    });
+  }
+
+  updateMunicipioFilter() {
+    const municipioSelect = document.getElementById('municipioSelect');
+    if (!municipioSelect) return;
+
+    municipioSelect.innerHTML = '<option value="all">Todos los Municipios</option>';
+
+    let pool = this.stations;
+    if (this.filters.provincia !== 'all') {
+      pool = pool.filter(s => s.provincia === this.filters.provincia);
+    }
+
+    const municipios = Array.from(new Set(pool.map(s => s.municipio).filter(Boolean))).sort();
+    municipios.forEach(mun => {
+      const opt = document.createElement('option');
+      opt.value = mun;
+      opt.textContent = mun;
+      municipioSelect.appendChild(opt);
+    });
+
+    this.filters.municipio = 'all';
+  }
+
   populateOperatorFilter() {
     const operatorSelect = document.getElementById('operatorSelect');
-    const operators = Array.from(new Set(this.stations.map(s => s.operator))).sort();
-    
-    operators.forEach(op => {
+    if (!operatorSelect) return;
+
+    operatorSelect.innerHTML = '<option value="all">Todos los operadores</option>';
+
+    // Contar estaciones por operador para ordenar por presencia
+    const opCount = {};
+    this.stations.forEach(s => {
+      const op = s.operador || 'Otros';
+      opCount[op] = (opCount[op] || 0) + 1;
+    });
+
+    const sortedOps = Object.keys(opCount).sort((a, b) => opCount[b] - opCount[a]);
+
+    sortedOps.forEach(op => {
+      const count = opCount[op];
       const option = document.createElement('option');
       option.value = op;
-      option.textContent = op;
+      option.textContent = `${op} (${count})`;
       operatorSelect.appendChild(option);
     });
   }
 
+  resetAllFilters() {
+    this.filters = {
+      search: '',
+      minPower: 0,
+      provincia: 'all',
+      municipio: 'all',
+      connector: 'all',
+      operator: 'all'
+    };
+
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.power-filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.minPower === '0');
+    });
+
+    document.getElementById('provinciaSelect').value = 'all';
+    this.updateMunicipioFilter();
+    document.getElementById('connectorSelect').value = 'all';
+    document.getElementById('operatorSelect').value = 'all';
+
+    this.applyFilters();
+  }
+
   applyFilters() {
+    const { search, minPower, provincia, municipio, connector, operator } = this.filters;
+
     this.filteredStations = this.stations.filter(station => {
-      // Búsqueda de texto
-      if (this.filters.search) {
-        const term = this.filters.search;
-        const matchText = (
-          station.name.toLowerCase().includes(term) ||
-          station.city.toLowerCase().includes(term) ||
-          station.address.toLowerCase().includes(term) ||
-          station.operator.toLowerCase().includes(term)
-        );
-        if (!matchText) return false;
+      // 1. Potencia mínima
+      if (minPower > 0 && (station.potencia_max_kw || 0) < minPower) {
+        return false;
       }
 
-      // Tipo de potencia
-      if (this.filters.powerType !== 'all') {
-        if (this.filters.powerType === 'ultra' && station.powerKw < 100) return false;
-        if (this.filters.powerType === 'fast' && (station.powerKw < 50 || station.powerKw >= 100)) return false;
-        if (this.filters.powerType === 'normal' && station.powerKw >= 50) return false;
+      // 2. Provincia
+      if (provincia !== 'all' && station.provincia !== provincia) {
+        return false;
       }
 
-      // Conector
-      if (this.filters.connector !== 'all') {
-        if (!station.connectors.includes(this.filters.connector)) return false;
+      // 3. Municipio
+      if (municipio !== 'all' && station.municipio !== municipio) {
+        return false;
       }
 
-      // Operador
-      if (this.filters.operator !== 'all') {
-        if (station.operator !== this.filters.operator) return false;
+      // 4. Operador
+      if (operator !== 'all' && station.operador !== operator) {
+        return false;
       }
 
-      // Solo disponibles
-      if (this.filters.onlyAvailable) {
-        if (station.status !== 'available' || station.availablePorts <= 0) return false;
+      // 5. Tipo de conector
+      if (connector !== 'all') {
+        if (!station.conectores || !station.conectores.includes(connector)) {
+          return false;
+        }
+      }
+
+      // 6. Búsqueda de texto (nombre, municipio, provincia, direccion, operador)
+      if (search) {
+        const textToSearch = `${station.nombre} ${station.municipio} ${station.provincia} ${station.direccion} ${station.operador}`.toLowerCase();
+        if (!textToSearch.includes(search)) {
+          return false;
+        }
       }
 
       return true;
     });
+
+    // Reiniciar paginación al cambiar filtros
+    this.displayedCount = this.pageSize;
 
     this.renderStationsList();
     this.updateMapMarkers();
@@ -286,67 +422,117 @@ class App {
   renderStationsList() {
     const listContainer = document.getElementById('stationsList');
     const countBadge = document.getElementById('stationsCountBadge');
+    const paginationFooter = document.getElementById('paginationFooter');
+    const paginationInfo = document.getElementById('paginationInfo');
+
+    const total = this.filteredStations.length;
+    const currentBatch = this.filteredStations.slice(0, this.displayedCount);
 
     if (countBadge) {
-      countBadge.textContent = `${this.filteredStations.length} encontrados`;
+      countBadge.textContent = `${total.toLocaleString('es-ES')} estaciones encontradas`;
     }
 
-    if (this.filteredStations.length === 0) {
+    if (total === 0) {
       listContainer.innerHTML = `
         <div class="empty-stations-state">
           <i class="fas fa-charging-station fa-3x"></i>
-          <h4>No hay cargadores que coincidan</h4>
-          <p>Prueba a relajar los filtros de búsqueda o cambiar de ubicación.</p>
+          <h4>No hay estaciones con estos filtros</h4>
+          <p>Prueba a rebajar la potencia mínima o seleccionar otra provincia/municipio.</p>
         </div>
       `;
+      if (paginationFooter) paginationFooter.classList.add('hidden');
       return;
     }
 
-    listContainer.innerHTML = this.filteredStations.map(station => {
-      const isUltra = station.powerKw >= 100;
-      const isFast = station.powerKw >= 50 && station.powerKw < 100;
-      const statusBadge = station.status === 'available' 
-        ? '<span class="status-pill available"><i class="fas fa-circle"></i> Disponible</span>' 
-        : station.status === 'busy' 
-          ? '<span class="status-pill busy"><i class="fas fa-circle"></i> Ocupado</span>' 
-          : '<span class="status-pill maintenance"><i class="fas fa-tools"></i> Mantenimiento</span>';
+    listContainer.innerHTML = currentBatch.map(station => this.createStationCardHtml(station)).join('');
 
-      return `
-        <div class="station-card" id="card-${station.id}" onclick="window.app.onCardClick('${station.id}')">
-          <div class="card-top">
-            <span class="operator-tag">${station.operator}</span>
-            ${statusBadge}
+    // Actualizar paginador
+    if (paginationFooter) {
+      if (this.displayedCount < total) {
+        paginationFooter.classList.remove('hidden');
+        if (paginationInfo) {
+          paginationInfo.textContent = `Mostrando ${currentBatch.length} de ${total.toLocaleString('es-ES')}`;
+        }
+      } else {
+        paginationFooter.classList.add('hidden');
+      }
+    }
+  }
+
+  loadMoreStations() {
+    const listContainer = document.getElementById('stationsList');
+    const total = this.filteredStations.length;
+    const prevCount = this.displayedCount;
+    this.displayedCount = Math.min(total, this.displayedCount + this.pageSize);
+
+    const nextBatch = this.filteredStations.slice(prevCount, this.displayedCount);
+    const htmlChunk = nextBatch.map(station => this.createStationCardHtml(station)).join('');
+    listContainer.insertAdjacentHTML('beforeend', htmlChunk);
+
+    const paginationFooter = document.getElementById('paginationFooter');
+    const paginationInfo = document.getElementById('paginationInfo');
+
+    if (this.displayedCount >= total) {
+      if (paginationFooter) paginationFooter.classList.add('hidden');
+    } else {
+      if (paginationInfo) {
+        paginationInfo.textContent = `Mostrando ${this.displayedCount} de ${total.toLocaleString('es-ES')}`;
+      }
+    }
+  }
+
+  createStationCardHtml(station) {
+    const power = station.potencia_max_kw || 0;
+    const isUltra = power >= 150;
+    const isFast = power >= 50 && power < 150;
+    const isSemi = power >= 22 && power < 50;
+
+    const tierClass = isUltra ? 'ultra' : isFast ? 'fast' : isSemi ? 'semi' : '';
+    const tierName = isUltra ? 'Ultrarrápida' : isFast ? 'Rápida' : isSemi ? 'Semi-rápida' : 'Lenta / AC';
+
+    const connectors = station.conectores || [];
+    const chargeTypes = station.tipos_carga || [];
+
+    return `
+      <div class="station-card" id="card-${station.id}" onclick="window.app.onCardClick('${station.id}')">
+        <div class="card-top">
+          <span class="operator-tag">${station.operador}</span>
+          <span class="status-pill available"><i class="fas fa-circle"></i> ${tierName}</span>
+        </div>
+        <h4 class="card-name">${station.nombre}</h4>
+        <p class="card-location">
+          <i class="fas fa-map-marker-alt"></i> 
+          <strong>${station.municipio}</strong> (${station.provincia})
+          ${station.direccion ? `<span class="card-address">· ${station.direccion}</span>` : ''}
+        </p>
+
+        <div class="card-specs">
+          <div class="spec-chip power ${tierClass}">
+            <i class="fas fa-bolt"></i> ${station.potencia_max_kw} kW
           </div>
-          <h4 class="card-name">${station.name}</h4>
-          <p class="card-location"><i class="fas fa-map-marker-alt"></i> ${station.city} · <span class="card-address">${station.address}</span></p>
-
-          <div class="card-specs">
-            <div class="spec-chip power ${isUltra ? 'ultra' : isFast ? 'fast' : ''}">
-              <i class="fas fa-bolt"></i> ${station.powerKw} kW
-            </div>
-            <div class="spec-chip price">
-              <i class="fas fa-tag"></i> ${station.pricePerKwh.toFixed(2)} €/kWh
-            </div>
-            <div class="spec-chip ports">
-              <i class="fas fa-plug"></i> ${station.availablePorts}/${station.totalPorts} libres
-            </div>
+          <div class="spec-chip ports">
+            <i class="fas fa-plug"></i> ${station.num_conectores} conector${station.num_conectores > 1 ? 'es' : ''}
           </div>
-
-          <div class="card-connectors">
-            ${station.connectors.map(c => `<span class="con-badge">${c}</span>`).join('')}
-          </div>
-
-          <div class="card-actions" onclick="event.stopPropagation()">
-            <button class="btn-card-calc" onclick="window.app.useStationInCalculator('${station.id}')">
-              <i class="fas fa-calculator"></i> Calcular Carga
-            </button>
-            <button class="btn-card-view" onclick="window.app.onCardClick('${station.id}')">
-              <i class="fas fa-crosshairs"></i> Ubicar
-            </button>
+          <div class="spec-chip price">
+            <i class="fas fa-tag"></i> ~${(station.precio_estimado || 0.45).toFixed(2)} €/kWh
           </div>
         </div>
-      `;
-    }).join('');
+
+        <div class="card-connectors">
+          ${connectors.map(c => `<span class="con-badge">${c}</span>`).join('')}
+          ${chargeTypes.map(t => `<span class="con-badge charge-type">${t}</span>`).join('')}
+        </div>
+
+        <div class="card-actions" onclick="event.stopPropagation()">
+          <button class="btn-card-calc" onclick="window.app.useStationInCalculator('${station.id}')">
+            <i class="fas fa-calculator"></i> Calcular Carga
+          </button>
+          <button class="btn-card-view" onclick="window.app.onCardClick('${station.id}')">
+            <i class="fas fa-crosshairs"></i> Ubicar
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   onCardClick(stationId) {
@@ -368,6 +554,7 @@ class App {
   ======================================================== */
   populateVehicleSelect() {
     const select = document.getElementById('vehicleSelect');
+    if (!select) return;
     select.innerHTML = '';
 
     EV_DATABASE.vehicles.forEach(vehicle => {
@@ -393,7 +580,6 @@ class App {
     vehicleMaxPowerInput.value = vehicle.maxDcPower;
     consumptionInput.value = vehicle.avgConsumption;
 
-    // Si es personalizado, permitir habilitar edición directa
     const isCustom = vehicleId === 'custom';
     capacityInput.readOnly = !isCustom;
     vehicleMaxPowerInput.readOnly = !isCustom;
@@ -407,16 +593,18 @@ class App {
     this.selectedStationForCalc = station;
 
     // Rellenar datos en la calculadora
-    document.getElementById('chargerPowerInput').value = station.powerKw;
-    document.getElementById('priceInput').value = station.pricePerKwh;
+    const power = station.potencia_max_kw || 22;
+    document.getElementById('chargerPowerInput').value = power;
+    document.getElementById('priceInput').value = (station.precio_estimado || 0.45).toFixed(2);
 
-    // Determinar corriente AC / DC según potencia
-    if (station.powerKw <= 22) {
-      const acRadio = document.querySelector('input[name="currentType"][value="ac"]');
-      if (acRadio) acRadio.checked = true;
-    } else {
+    // Seleccionar corriente AC o DC según el tipo y potencia
+    const hasDC = (station.tipos_carga || []).includes('DC') || power > 22;
+    if (hasDC) {
       const dcRadio = document.querySelector('input[name="currentType"][value="dc"]');
       if (dcRadio) dcRadio.checked = true;
+    } else {
+      const acRadio = document.querySelector('input[name="currentType"][value="ac"]');
+      if (acRadio) acRadio.checked = true;
     }
 
     // Mostrar banner de estación seleccionada
@@ -425,8 +613,8 @@ class App {
     const specsEl = document.getElementById('selectedStationSpecs');
     if (banner && nameEl && specsEl) {
       banner.classList.remove('hidden');
-      nameEl.textContent = `${station.name} (${station.operator})`;
-      specsEl.textContent = `${station.powerKw} kW · ${station.pricePerKwh.toFixed(2)} €/kWh · ${station.city}`;
+      nameEl.textContent = `${station.nombre} · ${station.municipio}`;
+      specsEl.textContent = `${station.operador} · ${power} kW · ${(station.precio_estimado || 0.45).toFixed(2)} €/kWh`;
     }
 
     // Cambiar a la pestaña de calculadora
@@ -483,7 +671,6 @@ class App {
     if (errorBox) errorBox.classList.add('hidden');
     if (resultsContainer) resultsContainer.classList.remove('hidden');
 
-    // Tiempo grande
     const timeValueEl = document.getElementById('resTimeValue');
     const timeUnitEl = document.getElementById('resTimeUnit');
     if (result.hours > 0) {
@@ -491,10 +678,9 @@ class App {
       timeUnitEl.textContent = `(${result.totalMinutes} minutos)`;
     } else {
       timeValueEl.textContent = `${result.minutes} min`;
-      timeUnitEl.textContent = 'Estimado';
+      timeUnitEl.textContent = 'Estimado según curva';
     }
 
-    // Coste, Energía y Autonomía
     document.getElementById('resCostValue').textContent = `${result.totalCost.toFixed(2)} €`;
     document.getElementById('resEnergyValue').textContent = `${result.netKwhNeeded} kWh`;
     document.getElementById('resGrossEnergyValue').textContent = `(${result.grossKwhSupplied} kWh facturados)`;
@@ -502,7 +688,6 @@ class App {
     document.getElementById('resCost100kmValue').textContent = `${result.costPer100km.toFixed(2)} € / 100km`;
     document.getElementById('resEffectivePowerValue').textContent = `${result.effectivePeakPower} kW`;
 
-    // Barra de batería visual
     const batteryStartBar = document.getElementById('batteryStartBar');
     const batteryAddedBar = document.getElementById('batteryAddedBar');
     const batteryRemainingBar = document.getElementById('batteryRemainingBar');
@@ -518,7 +703,6 @@ class App {
     document.getElementById('batteryLegendAdded').textContent = `Añadido: +${addedPct}% (${result.netKwhNeeded} kWh)`;
     document.getElementById('batteryLegendTarget').textContent = `Final: ${meta.targetSoc}%`;
 
-    // Aviso > 80%
     const warningBox = document.getElementById('calcWarning80');
     if (warningBox) {
       if (result.warning80) {
@@ -528,7 +712,6 @@ class App {
       }
     }
 
-    // Desglose de Fases
     const phasesList = document.getElementById('calcPhasesList');
     if (phasesList && result.phases) {
       phasesList.innerHTML = result.phases.map(phase => `
@@ -552,7 +735,7 @@ class App {
   getUserLocation() {
     const locateBtn = document.getElementById('locateBtn');
     if (!navigator.geolocation) {
-      alert('La geolocalización no está soportada por este navegador.');
+      alert('La geolocalización no está soportada por tu navegador.');
       return;
     }
 
@@ -564,17 +747,16 @@ class App {
         const { latitude, longitude } = pos.coords;
         chargerMap.setUserLocation(latitude, longitude);
 
-        // Ordenar estaciones por distancia
+        // Ordenar estaciones por distancia al usuario
         this.stations.forEach(s => {
           s.distance = this.calculateDistance(latitude, longitude, s.lat, s.lng);
         });
-        this.stations.sort((a, b) => a.distance - b.distance);
+        this.stations.sort((a, b) => (a.distance || 0) - (b.distance || 0));
         this.applyFilters();
       },
       (err) => {
         locateBtn.classList.remove('loading');
         console.warn('Error al obtener ubicación:', err);
-        // Fallback a ubicación aproximada de Madrid
         chargerMap.setUserLocation(40.4168, -3.7038);
       },
       { timeout: 8000 }
@@ -582,7 +764,7 @@ class App {
   }
 
   calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Radio de la Tierra en km
+    const R = 6371; // km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = 
@@ -594,7 +776,7 @@ class App {
   }
 }
 
-// Iniciar aplicación al cargar el DOM
+// Iniciar aplicación
 window.addEventListener('DOMContentLoaded', () => {
   window.app = new App();
   window.app.init();
