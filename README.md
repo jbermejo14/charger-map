@@ -1,6 +1,6 @@
 # ElectroCharge ⚡ - Buscador de Puntos de Recarga & Calculadora EV en España
 
-Plataforma web de alto rendimiento construida con **Next.js (App Router)**, **TypeScript**, **Tailwind CSS 4** y **Leaflet MarkerCluster**, diseñada para explorar el censo oficial de más de **12.114 puntos de recarga de vehículos eléctricos** en España, con páginas estáticas indexables (SSG), SEO avanzado y calculadora de recarga basada en curvas de potencia reales.
+Plataforma web de alto rendimiento construida con **Next.js (App Router)**, **TypeScript**, **Tailwind CSS 4** y **Leaflet MarkerCluster**, diseñada para explorar el censo RIPREE de más de **12.114 puntos de recarga de vehículos eléctricos** en España, con páginas estáticas indexables (SSG), SEO avanzado y calculadora de recarga basada en curvas de potencia reales.
 
 ---
 
@@ -32,11 +32,11 @@ Plataforma web de alto rendimiento construida con **Next.js (App Router)**, **Ty
 
 ---
 
-## 🏛️ Fuente Oficial de los Datos
+## 🏛️ Fuente de los Datos
 
 Los datos provienen del **Registro Administrativo de Instalaciones de Puntos de Recarga de Energía Eléctrica (RIPREE)**, regulado por la Secretaría de Estado de Energía del **Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO)** conforme al marco regulatorio estatal y al reglamento europeo **AFIR** (*Alternative Fuels Infrastructure Regulation*), publicado en **datos.gob.es**.
 
-- **URL de exportación oficial**:  
+- **URL de exportación del registro**:  
   `https://energia.serviciosmin.gob.es/Ripree/ExportarInstalaciones/Export`
 - **Formato del archivo**: CSV codificado en `UTF-16LE`, delimitado por punto y coma (`;`).
 - **Fecha de los datos incluidos**: **16 de noviembre de 2026** (extraída del nombre y metadatos del archivo de origen).
@@ -56,13 +56,13 @@ cp .env.example .env.local
 | Variable | Descripción | Valor por Defecto |
 | :--- | :--- | :--- |
 | `NEXT_PUBLIC_SITE_URL` | URL base absoluta para metaetiquetas canonical, Open Graph y sitemap | `https://electrocarga.es` |
-| `CHARGERS_CSV_PATH` | Ruta local al archivo CSV oficial descargado | `c:\Users\Usuario\Downloads\InstalacionesPublicas_20261116_121623.csv` |
+| `CHARGERS_CSV_PATH` | Ruta local al archivo CSV del registro RIPREE descargado | `c:\Users\Usuario\Downloads\InstalacionesPublicas_20261116_121623.csv` |
 
 ---
 
 ## 🔄 Cómo Actualizar el Catálogo de Datos
 
-El importador oficial lee el CSV, sanitiza anomalías de formato (comillas internas sin escapar conforme a RFC 4180), descarta registros sin ID o fuera de España, normaliza operadores y conectores, y genera JSON particionados por provincia fuera de la carpeta `public`:
+El importador lee el CSV, sanitiza anomalías de formato (comillas internas sin escapar conforme a RFC 4180), descarta registros sin ID o fuera de España, normaliza operadores y conectores, y genera JSON particionados por provincia fuera de la carpeta `public`:
 
 ```bash
 npm run import-chargers
@@ -123,3 +123,9 @@ Arranca el servidor en modo producción:
 ```bash
 npm start
 ```
+
+### Tailwind CSS y WASM
+
+Tailwind 4 se procesa con PostCSS (`postcss.config.mjs`, plugin `@tailwindcss/postcss`), de modo que funciona con `next build --webpack`. En equipos donde una política de Control de Aplicaciones bloquea los binarios nativos (`@tailwindcss/oxide-win32-x64-msvc`, SWC), se usa la variante WASM `@tailwindcss/oxide-wasm32-wasi`, declarada como dependencia opcional. Si `npm install` la rechaza por plataforma, ejecuta `npm install --force`. En Linux se usa el binario nativo y la dependencia WASM se omite.
+
+Con el escáner WASM en Windows, Tailwind no encuentra ficheros (WASI no resuelve rutas `C:\...`) y el CSS saldría sin utilidades. Por eso `postcss-inline-candidates.cjs` actúa como respaldo: si el escáner no encuentra nada, lee `src/` y declara sus palabras con `@source inline()`. Con el binario nativo (Linux) no hace nada. Si cambias la configuración de PostCSS y el CSS no cambia, modifica un comentario de `src/app/globals.css` para invalidar la caché de webpack.

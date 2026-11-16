@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-[var(--border-color)] bg-[var(--bg-surface)] mt-auto py-10 px-4 sm:px-6">
       <div className="mx-auto max-w-7xl">
-        {/* Banner de Fuente Oficial */}
+        {/* Banner de fuente de los datos */}
         <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4 sm:p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-lg bg-orange-500/20 p-2 text-orange-500">
@@ -18,10 +18,10 @@ export default function Footer() {
             </div>
             <div>
               <h4 className="text-sm font-bold text-[var(--text-primary)]">
-                Datos Oficiales del Censo Público de Recarga
+                Datos del Censo Público de Recarga (RIPREE)
               </h4>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">
-                Fuente: <strong>Registro RIPREE</strong> del Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO) / Secretaría de Estado de Energía catalogado en <strong>datos.gob.es</strong>. Fecha oficial de los datos: <strong>{date}</strong>. Total censado: <strong>{total} estaciones públicas</strong>.
+                Fuente: <strong>Registro RIPREE</strong> del Ministerio para la Transición Ecológica y el Reto Demográfico (MITECO) / Secretaría de Estado de Energía catalogado en <strong>datos.gob.es</strong>. Fecha de los datos: <strong>{date}</strong>. Total censado: <strong>{total} estaciones públicas</strong>.
               </p>
             </div>
           </div>
@@ -31,7 +31,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 shrink-0 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-orange-500 transition-colors"
           >
-            Exportación Oficial <ExternalLink className="h-3 w-3" />
+            Exportación del registro <ExternalLink className="h-3 w-3" />
           </a>
         </div>
 
@@ -89,7 +89,7 @@ export default function Footer() {
 
         <div className="pt-6 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between text-xs text-[var(--text-muted)] gap-3">
           <p>© {new Date().getFullYear()} ElectroCharge. Infraestructura de recarga en España.</p>
-          <p className="text-orange-500 font-medium">Diseño Naranja y Negro · Censo Oficial</p>
+          <p className="text-orange-500 font-medium">Diseño Naranja y Negro · Datos RIPREE</p>
         </div>
       </div>
     </footer>

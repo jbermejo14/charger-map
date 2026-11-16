@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga en ${mun.municipio} (${mun.count} Estaciones) | ${prov.provincia}`;
-  const description = `Directorio oficial de ${mun.count} puntos de recarga para coches eléctricos en ${mun.municipio} (${prov.provincia}). Potencias, operadores, conectores Mennekes/CCS y ubicaciones exactas.`;
+  const description = `Directorio de ${mun.count} puntos de recarga para coches eléctricos en ${mun.municipio} (${prov.provincia}). Potencias, operadores, conectores Mennekes/CCS y ubicaciones exactas.`;
 
   return {
     title,
@@ -104,14 +104,14 @@ export default async function MunicipioPage({ params }: PageProps) {
           >
             Provincia de {prov.provincia}
           </Link>
-          <span className="text-xs text-[var(--text-muted)]">Censo Oficial · {date}</span>
+          <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
           Puntos de Recarga en <span className="text-orange-500">{mun.municipio}</span>
         </h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-4xl leading-relaxed">
           El municipio de <strong>{mun.municipio}</strong> ({prov.provincia}) dispone de un total de{' '}
-          <strong>{stations.length} estaciones públicas de carga para vehículos eléctricos</strong> censadas en el registro oficial del Ministerio.
+          <strong>{stations.length} estaciones públicas de carga para vehículos eléctricos</strong> censadas en el registro RIPREE del Ministerio.
           {ultraCount > 0 ? ` Entre ellas cuenta con ${ultraCount} estación(es) de carga ultrarrápida (>100 kW)` : ''}
           {rapidaCount > 0 ? `, ${rapidaCount} estación(es) rápida(s) (50-100 kW)` : ''}
           {normalCount > 0 ? ` y ${normalCount} de carga normal o semirápida` : ''}.

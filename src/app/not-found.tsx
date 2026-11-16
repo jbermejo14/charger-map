@@ -15,7 +15,7 @@ export default function NotFound() {
             Página o Punto No Encontrado
           </h1>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            La provincia, municipio o punto de recarga que buscas no existe en el registro oficial o ha sido actualizado recientemente.
+            La provincia, municipio o punto de recarga que buscas no existe en el registro RIPREE o ha sido actualizado recientemente.
           </p>
         </div>
 

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga de ${op.operador} en España (${op.total_puntos.toLocaleString('es-ES')} Estaciones)`;
-  const description = `Consulta la red oficial de ${op.total_puntos.toLocaleString('es-ES')} puntos de recarga de ${op.operador} en España. Cobertura provincial, desgloses de potencia y mapa de estaciones.`;
+  const description = `Consulta la red de ${op.total_puntos.toLocaleString('es-ES')} puntos de recarga de ${op.operador} en España. Cobertura provincial, desgloses de potencia y mapa de estaciones.`;
 
   return {
     title,
@@ -65,7 +65,7 @@ export default async function OperadorPage({ params }: PageProps) {
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 text-xs font-bold text-orange-500">
-            Red de Recarga Oficial
+            Red de Recarga
           </span>
           <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
@@ -109,7 +109,7 @@ export default async function OperadorPage({ params }: PageProps) {
 
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase">
-            <ShieldCheck className="h-4 w-4" /> Registro Oficial
+            <ShieldCheck className="h-4 w-4" /> Registro RIPREE
           </div>
           <div className="text-xl font-black text-[var(--text-primary)] mt-1">
             Verificado

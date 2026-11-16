@@ -5,7 +5,7 @@ import HomeExplorer from '@/components/HomeExplorer';
 
 export const metadata: Metadata = {
   title: 'Buscador de Puntos de Recarga de Coches Eléctricos en España',
-  description: 'Mapa oficial con más de 12.000 puntos de recarga censados por el Ministerio en España. Filtra por potencia (ultrarrápida, rápida), tipo de conector y operador.',
+  description: 'Mapa con más de 12.000 puntos de recarga del registro RIPREE del Ministerio en España. Filtra por potencia (ultrarrápida, rápida), tipo de conector y operador.',
   alternates: {
     canonical: '/',
   },
@@ -19,7 +19,7 @@ export default function HomePage() {
   return (
     <div className="flex-1 flex flex-col">
       <h1 className="sr-only">
-        Buscador de Puntos de Recarga de Coches Eléctricos en España - Mapa Oficial
+        Buscador de Puntos de Recarga de Coches Eléctricos en España - Mapa
       </h1>
 
       {/* Componente Interactivo Buscador + Mapa */}
@@ -33,7 +33,7 @@ export default function HomePage() {
               Infraestructura de Recarga Pública en España
             </h2>
             <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
-              El censo oficial del Registro Administrativo de Instalaciones de Puntos de Recarga de Energía Eléctrica (RIPREE), gestionado por la Secretaría de Estado de Energía y el MITECO, recoge a fecha de <strong>{date}</strong> un total de <strong>{total} estaciones públicas operativas</strong> en las 50 provincias y ciudades autónomas españolas.
+              El censo del Registro Administrativo de Instalaciones de Puntos de Recarga de Energía Eléctrica (RIPREE), gestionado por la Secretaría de Estado de Energía y el MITECO, recoge a fecha de <strong>{date}</strong> un total de <strong>{total} estaciones públicas operativas</strong> en las 50 provincias y ciudades autónomas españolas.
             </p>
           </div>
 

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga en ${prov.provincia} (${prov.total_puntos} Estaciones)`;
-  const description = `Guía oficial de ${prov.total_puntos} puntos de recarga en ${prov.provincia}. Desglose de cargadores ultrarrápidos (>100 kW), rápidos y conectores Mennekes/CCS2 en ${prov.municipios.length} municipios.`;
+  const description = `Guía de ${prov.total_puntos} puntos de recarga en ${prov.provincia}. Desglose de cargadores ultrarrápidos (>100 kW), rápidos y conectores Mennekes/CCS2 en ${prov.municipios.length} municipios.`;
 
   return {
     title,
@@ -79,7 +79,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
           <span className="rounded-full bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 text-xs font-bold text-orange-500">
             {prov.comunidad}
           </span>
-          <span className="text-xs text-[var(--text-muted)]">Censo Oficial RIPREE · {date}</span>
+          <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
           Puntos de Recarga en <span className="text-orange-500">{prov.provincia}</span>

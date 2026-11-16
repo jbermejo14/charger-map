@@ -50,9 +50,6 @@ export default function Navbar() {
             <span className="text-lg font-black tracking-tight text-[var(--text-primary)]">
               Electro<span className="text-orange-500">Charge</span>
             </span>
-            <span className="rounded-full border border-orange-500/40 bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-bold text-orange-500">
-              OFICIAL
-            </span>
           </div>
         </Link>
 

@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     default: 'ElectroCharge - Buscador de Puntos de Recarga & Calculadora EV en España',
     template: '%s | ElectroCharge'
   },
-  description: 'Catálogo oficial de más de 12.000 puntos de recarga de vehículos eléctricos en España (MITECO/RIPREE). Encuentra cargadores por provincia, municipio y operador, y calcula tiempos y costes reales.',
+  description: 'Catálogo de más de 12.000 puntos de recarga de vehículos eléctricos en España con datos del registro RIPREE del Ministerio. Encuentra cargadores por provincia, municipio y operador, y calcula tiempos y costes reales.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'ElectroCharge - Puntos de Recarga y Calculadora EV en España',
-    description: 'Buscador oficial de puntos de recarga para coches eléctricos en España con mapa interactivo y calculadora de curva de carga.',
+    description: 'Buscador de puntos de recarga para coches eléctricos en España con mapa interactivo y calculadora de curva de carga.',
     url: SITE_URL,
     siteName: 'ElectroCharge',
     locale: 'es_ES',

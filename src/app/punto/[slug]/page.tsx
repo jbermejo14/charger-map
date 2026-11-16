@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `${station.nombre} - Punto de Recarga en ${station.municipio} (${station.potencia_max_kw} kW)`;
-  const description = `Ficha técnica oficial del punto de recarga ${station.nombre} (${station.operador}) en ${station.municipio}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
+  const description = `Ficha técnica del punto de recarga ${station.nombre} (${station.operador}) en ${station.municipio}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
 
   return {
     title,
@@ -115,7 +115,7 @@ export default async function PuntoPage({ params }: PageProps) {
           <span className="rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
             {tierName}
           </span>
-          <span className="text-xs text-[var(--text-muted)]">ID Oficial: {station.id}</span>
+          <span className="text-xs text-[var(--text-muted)]">ID RIPREE: {station.id}</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
@@ -163,7 +163,7 @@ export default async function PuntoPage({ params }: PageProps) {
         </Link>
       </div>
 
-      {/* Grid de Especificaciones Técnicas Oficiales */}
+      {/* Grid de Especificaciones Técnicas */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="rounded-2xl border border-orange-500/40 bg-orange-500/5 p-4">
           <span className="text-[10px] font-bold uppercase tracking-wider text-orange-500 block">
