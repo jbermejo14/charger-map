@@ -173,3 +173,27 @@ C3 → C4.
 - **`links.test.ts`** sigue pasando: no hay ningún `<Link>` hacia rutas solo HTML.
 - **`npx tsc --noEmit`** pasa.
 - **En pantalla** (sesión principal): una ficha en un municipio con muchos puntos y otra con uno solo, a 375 y 1280 px.
+
+### 5.5 Ajustes tras la revisión (18/11/2026)
+
+- **Conectores.**
+  - En los datos, `conectores` es la lista de **tipos** sin repetir, y el número de tomas está en `num_conectores`.
+  - El resumen dice "Dispone de {num_conectores} conectores ({tipos})", o en singular "Dispone de 1 conector (Tipo 2)".
+  - "desconocido" se excluye. Si no queda ningún tipo, se dice solo el número; si el número es 0, se omite la frase.
+- **Nombres de municipio.**
+  - `formatMunicipalityName(name)` coloca delante el artículo pospuesto. Formas que trata:
+    - castellano: La, El, Los, Las;
+    - catalán: L', l´, Els, Les;
+    - balear: Es, Ses, Sa;
+    - gallego: A, O, As, Os.
+  - Respeta la segunda denominación tras `/`. Ejemplo: "Vila Joiosa, la/Villajoyosa" → "La Vila Joiosa/Villajoyosa".
+  - No toca los nombres cuya última parte tras la coma no sea un artículo.
+  - Se usa en todos los textos visibles nuevos y en las descripciones (metadata y JSON-LD). No se usa para los slugs.
+- **Mismo emplazamiento.**
+  - Se considera del mismo emplazamiento, y se excluye de los cercanos, todo punto a `SAME_SITE_MAX_KM = 0.05` (50 m) o menos.
+  - Sustituye al criterio de coordenadas exactas.
+- **Título del documento** (`stationMetaTitle`):
+  - si `stationDisplayTitle` cabe en 56 caracteres (65 menos el sufijo " | Ododex"), se usa tal cual;
+  - si no, se usa "Punto de recarga en {municipio} · {kW} kW".
+  - El `h1` y el `name` del JSON-LD siguen con `stationDisplayTitle`.
+- **Miga de pan:** el último elemento es "Punto de {kW} kW", más corto.
