@@ -1,30 +1,25 @@
 import type { Metadata } from 'next';
-import Calculator from '@/components/Calculator';
+import { Suspense } from 'react';
+import CalculatorFromQuery from '@/components/CalculatorFromQuery';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { SITE_NAME, absoluteUrl } from '@/lib/site';
 import { Calculator as CalcIcon, Info, Zap, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Calculadora de Carga de Coche Eléctrico (Tiempo y Coste Real)',
   description: 'Calcula el tiempo de recarga y el coste en euros para cualquier vehículo eléctrico en España. Simula la curva de desaceleración por encima del 80% y ajusta la potencia de carga y tu tarifa por kWh.',
   alternates: {
-    canonical: '/calculadora',
+    canonical: absoluteUrl('/calculadora'),
   },
   openGraph: {
-    title: 'Calculadora de Carga de Coche Eléctrico - ElectroCharge',
+    title: `Calculadora de Carga de Coche Eléctrico - ${SITE_NAME}`,
     description: 'Estima con precisión física el tiempo y coste de cargar tu coche eléctrico con curva de potencia y tarifa configurable.',
-    url: 'https://electrocarga.es/calculadora',
+    url: absoluteUrl('/calculadora'),
     type: 'website',
   }
 };
 
-interface CalculadoraPageProps {
-  searchParams: Promise<{ power?: string; name?: string }>;
-}
-
-export default async function CalculadoraPage({ searchParams }: CalculadoraPageProps) {
-  const { power, name } = await searchParams;
-  const initialPower = power ? parseFloat(power) : undefined;
-
+export default function CalculadoraPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6 space-y-8">
       {/* Migas de pan */}
@@ -48,10 +43,9 @@ export default async function CalculadoraPage({ searchParams }: CalculadoraPageP
       </section>
 
       {/* Componente de la Calculadora */}
-      <Calculator
-        initialPower={initialPower}
-        stationName={name}
-      />
+      <Suspense fallback={<p className="text-xs text-[var(--text-muted)]">Cargando calculadora...</p>}>
+        <CalculatorFromQuery />
+      </Suspense>
 
       {/* Consejos prácticos de recarga */}
       <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-6 space-y-4">

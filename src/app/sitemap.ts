@@ -1,20 +1,22 @@
 import type { MetadataRoute } from 'next';
 import { getGlobalSummary, getAllStationSlugs } from '@/lib/data';
+import { absoluteUrl } from '@/lib/site';
+
+export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const summary = getGlobalSummary();
   const lastModified = new Date();
 
   const routes: MetadataRoute.Sitemap = [
     {
-      url: `${siteUrl}`,
+      url: absoluteUrl('/'),
       lastModified,
       changeFrequency: 'daily',
       priority: 1.0,
     },
     {
-      url: `${siteUrl}/calculadora`,
+      url: absoluteUrl(`/calculadora`),
       lastModified,
       changeFrequency: 'monthly',
       priority: 0.9,
@@ -24,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Provincias
   for (const prov of summary.provincias) {
     routes.push({
-      url: `${siteUrl}/provincia/${prov.slug}`,
+      url: absoluteUrl(`/provincia/${prov.slug}`),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -34,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const mun of prov.municipios) {
       if (mun.count > 0) {
         routes.push({
-          url: `${siteUrl}/provincia/${prov.slug}/${mun.slug}`,
+          url: absoluteUrl(`/provincia/${prov.slug}/${mun.slug}`),
           lastModified,
           changeFrequency: 'weekly',
           priority: 0.7,
@@ -46,7 +48,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Operadores
   for (const op of summary.operadores) {
     routes.push({
-      url: `${siteUrl}/operador/${op.slug}`,
+      url: absoluteUrl(`/operador/${op.slug}`),
       lastModified,
       changeFrequency: 'weekly',
       priority: 0.7,
@@ -57,7 +59,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const stationSlugs = getAllStationSlugs();
   for (const s of stationSlugs) {
     routes.push({
-      url: `${siteUrl}/punto/${s.slug}`,
+      url: absoluteUrl(`/punto/${s.slug}`),
       lastModified,
       changeFrequency: 'monthly',
       priority: 0.6,

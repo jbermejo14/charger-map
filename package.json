@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "npm run preparar-datos && next dev --webpack",
+    "preparar-datos": "tsx scripts/preparar-datos.ts",
+    "build": "npm run preparar-datos && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "import-chargers": "tsx scripts/import-chargers.ts",
@@ -23,7 +24,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
-    "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "20.17.10",
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",

@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
+import { SITE_NAME, absoluteUrl, getSiteUrl } from '@/lib/site';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -12,20 +11,20 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: 'ElectroCharge - Buscador de Puntos de Recarga & Calculadora EV en España',
-    template: '%s | ElectroCharge'
+    default: `${SITE_NAME} - Buscador de Puntos de Recarga & Calculadora EV en España`,
+    template: `%s | ${SITE_NAME}`
   },
   description: 'Catálogo de más de 12.000 puntos de recarga de vehículos eléctricos en España con datos del registro RIPREE del Ministerio. Encuentra cargadores por provincia, municipio y operador, y calcula tiempos y costes reales.',
   alternates: {
-    canonical: '/',
+    canonical: absoluteUrl('/'),
   },
   openGraph: {
-    title: 'ElectroCharge - Puntos de Recarga y Calculadora EV en España',
+    title: `${SITE_NAME} - Puntos de Recarga y Calculadora EV en España`,
     description: 'Buscador de puntos de recarga para coches eléctricos en España con mapa interactivo y calculadora de curva de carga.',
-    url: SITE_URL,
-    siteName: 'ElectroCharge',
+    url: absoluteUrl('/'),
+    siteName: SITE_NAME,
     locale: 'es_ES',
     type: 'website',
   },

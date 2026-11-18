@@ -3,8 +3,14 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAllProvincias, getProvinciaBySlug, getStationsByMunicipio, getGlobalSummary } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { InternalLink } from '@/components/InternalLink';
+import { absoluteUrl } from '@/lib/site';
+import { slugify } from '@/lib/slugs';
+import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
 import { Zap, MapPin, Building2, ChevronRight, Navigation } from 'lucide-react';
+
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ provincia: string; municipio: string }>;
@@ -37,7 +43,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const mun = prov.municipios.find((m) => m.slug === munSlug);
   if (!mun) return { title: 'Municipio no encontrado' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga en ${mun.municipio} (${mun.count} Estaciones) | ${prov.provincia}`;
   const description = `Directorio de ${mun.count} puntos de recarga para coches eléctricos en ${mun.municipio} (${prov.provincia}). Potencias, operadores, conectores Mennekes/CCS y ubicaciones exactas.`;
 
@@ -45,12 +50,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `${siteUrl}/provincia/${provSlug}/${munSlug}`,
+      canonical: absoluteUrl(`/provincia/${provSlug}/${munSlug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${siteUrl}/provincia/${provSlug}/${munSlug}`,
+      url: absoluteUrl(`/provincia/${provSlug}/${munSlug}`),
       type: 'website',
     }
   };
@@ -121,7 +126,7 @@ export default async function MunicipioPage({ params }: PageProps) {
       {/* Mapa del municipio */}
       <section className="rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-md">
         <ClientMap
-          stations={stations}
+          stations={stations.map((station) => toMapPoint(toHomeStation(station)))}
           center={[avgLat, avgLng]}
           zoom={13}
           height="380px"
@@ -151,10 +156,10 @@ export default async function MunicipioPage({ params }: PageProps) {
               {stations.map((s) => (
                 <tr key={s.id} className="hover:bg-orange-500/5 transition-colors">
                   <td className="py-3 px-4">
-                    <Link href={`/punto/${s.slug}`} className="font-bold text-[var(--text-primary)] hover:text-orange-500 block">
+                    <InternalLink href={`/punto/${s.slug}`} className="font-bold text-[var(--text-primary)] hover:text-orange-500 block">
                       {s.nombre}
-                    </Link>
-                    <Link href={`/operador/${s.operador.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="text-[11px] font-semibold text-orange-500 hover:underline">
+                    </InternalLink>
+                    <Link href={`/operador/${slugify(s.operador)}`} className="text-[11px] font-semibold text-orange-500 hover:underline">
                       {s.operador}
                     </Link>
                   </td>
@@ -184,12 +189,12 @@ export default async function MunicipioPage({ params }: PageProps) {
                   </td>
                   <td className="py-3 px-4 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
-                      <Link
+                      <InternalLink
                         href={`/punto/${s.slug}`}
                         className="px-2.5 py-1 rounded-lg bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors"
                       >
                         Ficha
-                      </Link>
+                      </InternalLink>
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`}
                         target="_blank"
@@ -217,14 +222,14 @@ export default async function MunicipioPage({ params }: PageProps) {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {nearbyMunicipios.map((nm) => (
-              <Link
+              <InternalLink
                 key={nm.slug}
                 href={`/provincia/${provSlug}/${nm.slug}`}
                 className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-orange-500 text-xs transition-colors"
               >
                 <span className="font-semibold text-[var(--text-primary)] truncate">{nm.municipio}</span>
                 <span className="text-[10px] font-bold text-orange-500 shrink-0 ml-1">{nm.count}</span>
-              </Link>
+              </InternalLink>
             ))}
           </div>
         </section>

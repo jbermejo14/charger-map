@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SITE_NAME } from '@/lib/site';
 import { ShieldCheck, Info, ExternalLink } from 'lucide-react';
 import { getGlobalSummary } from '@/lib/data';
 
@@ -88,7 +89,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-6 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between text-xs text-[var(--text-muted)] gap-3">
-          <p>© {new Date().getFullYear()} ElectroCharge. Infraestructura de recarga en España.</p>
+          <p>© {new Date().getFullYear()} {SITE_NAME}. Infraestructura de recarga en España.</p>
           <p className="text-orange-500 font-medium">Diseño Naranja y Negro · Datos RIPREE</p>
         </div>
       </div>

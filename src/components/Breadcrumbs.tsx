@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { InternalLink } from '@/components/InternalLink';
+import { absoluteUrl } from '@/lib/site';
 import { ChevronRight, Home } from 'lucide-react';
 
 export interface BreadcrumbItem {
@@ -11,8 +13,6 @@ interface BreadcrumbsProps {
 }
 
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
-
   // Generar JSON-LD Schema.org BreadcrumbList
   const breadcrumbListJsonLd = {
     '@context': 'https://schema.org',
@@ -22,13 +22,13 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
         '@type': 'ListItem',
         position: 1,
         name: 'Inicio',
-        item: siteUrl
+        item: absoluteUrl('/')
       },
       ...items.map((item, index) => ({
         '@type': 'ListItem',
         position: index + 2,
         name: item.name,
-        item: item.url.startsWith('http') ? item.url : `${siteUrl}${item.url}`
+        item: item.url.startsWith('http') ? item.url : absoluteUrl(item.url)
       }))
     ]
   };
@@ -54,9 +54,9 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                   {item.name}
                 </span>
               ) : (
-                <Link href={item.url} className="hover:text-orange-500 transition-colors">
+                <InternalLink href={item.url} className="hover:text-orange-500 transition-colors">
                   {item.name}
-                </Link>
+                </InternalLink>
               )}
             </div>
           );

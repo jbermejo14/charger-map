@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getGlobalSummary, getOperatorBySlug } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { absoluteUrl } from '@/lib/site';
 import { Building2, Zap, MapPin, ChevronRight, ShieldCheck } from 'lucide-react';
+
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ operador: string }>;
@@ -21,7 +24,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const op = getOperatorBySlug(slug);
   if (!op) return { title: 'Operador no encontrado' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga de ${op.operador} en España (${op.total_puntos.toLocaleString('es-ES')} Estaciones)`;
   const description = `Consulta la red de ${op.total_puntos.toLocaleString('es-ES')} puntos de recarga de ${op.operador} en España. Cobertura provincial, desgloses de potencia y mapa de estaciones.`;
 
@@ -29,12 +31,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `${siteUrl}/operador/${slug}`,
+      canonical: absoluteUrl(`/operador/${slug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${siteUrl}/operador/${slug}`,
+      url: absoluteUrl(`/operador/${slug}`),
       type: 'website',
     }
   };

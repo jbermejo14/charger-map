@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import sitemap from '../src/app/sitemap';
+import { absoluteUrl } from '../src/lib/site';
 import { getProvinciaBySlug, getStationBySlug } from '../src/lib/data';
 
 describe('Sitemap y Rutas Canónicas (src/app/sitemap.ts)', () => {
@@ -9,7 +10,7 @@ describe('Sitemap y Rutas Canónicas (src/app/sitemap.ts)', () => {
     assert.ok(urls.length > 100, 'El sitemap debe contener cientos de URLs indexables');
 
     // Comprobar URLs raíz
-    const home = urls.find((u) => u.url.endsWith('electrocarga.es') || u.url.endsWith('electrocarga.es/'));
+    const home = urls.find((u) => u.url === absoluteUrl('/'));
     assert.ok(home, 'Debe incluir la home');
 
     const calc = urls.find((u) => u.url.includes('/calculadora'));

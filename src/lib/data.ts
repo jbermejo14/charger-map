@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { GlobalSummary, ProvinciaSummary, StationRecord } from './types';
-import { slugify, parseStationSlug } from './slugs';
+import { slugify } from './slugs';
 
 const DATA_DIR = path.resolve(process.cwd(), 'src/data');
 const SUMMARY_PATH = path.join(DATA_DIR, 'summary.json');
@@ -50,21 +50,26 @@ export function getStationsByMunicipio(provinciaSlug: string, municipioSlug: str
   return allStations.filter((s) => slugify(s.municipio) === municipioSlug);
 }
 
-export function getStationById(id: string): StationRecord | null {
-  // Buscar en todos los archivos de provincia si es necesario
-  const summary = getGlobalSummary();
-  for (const prov of summary.provincias) {
-    const stations = getStationsByProvincia(prov.slug);
-    const found = stations.find((s) => s.id === id);
-    if (found) return found;
+let cachedStationsBySlug: Map<string, StationRecord> | null = null;
+
+function getStationsBySlugIndex(): Map<string, StationRecord> {
+  if (cachedStationsBySlug) return cachedStationsBySlug;
+  const index = new Map<string, StationRecord>();
+  for (const prov of getGlobalSummary().provincias) {
+    for (const station of getStationsByProvincia(prov.slug)) {
+      index.set(station.slug, station);
+    }
   }
-  return null;
+  cachedStationsBySlug = index;
+  return index;
 }
 
+/**
+ * Busca un punto por su slug completo `{id}-{nombre}`; null si no existe.
+ * Se compara el slug entero porque los ids del RIPREE pueden llevar mayúsculas y el slug las pasa a minúsculas.
+ */
 export function getStationBySlug(fullSlug: string): StationRecord | null {
-  const parsed = parseStationSlug(fullSlug);
-  if (!parsed) return null;
-  return getStationById(parsed.id);
+  return getStationsBySlugIndex().get(fullSlug) ?? null;
 }
 
 export function getOperatorBySlug(operatorSlug: string) {

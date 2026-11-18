@@ -4,8 +4,13 @@ import Link from 'next/link';
 import { getStationBySlug, getAllStationSlugs, getGlobalSummary } from '@/lib/data';
 import { slugify } from '@/lib/slugs';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { InternalLink } from '@/components/InternalLink';
+import { absoluteUrl } from '@/lib/site';
 import ClientMap from '@/components/ClientMap';
+import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import { Zap, MapPin, Building2, Clock, Navigation, Calculator, ExternalLink, ShieldCheck } from 'lucide-react';
+
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -22,7 +27,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const station = getStationBySlug(slug);
   if (!station) return { title: 'Punto de recarga no encontrado' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `${station.nombre} - Punto de Recarga en ${station.municipio} (${station.potencia_max_kw} kW)`;
   const description = `Ficha técnica del punto de recarga ${station.nombre} (${station.operador}) en ${station.municipio}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
 
@@ -30,12 +34,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `${siteUrl}/punto/${slug}`,
+      canonical: absoluteUrl(`/punto/${slug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${siteUrl}/punto/${slug}`,
+      url: absoluteUrl(`/punto/${slug}`),
       type: 'website',
     }
   };
@@ -53,7 +57,6 @@ export default async function PuntoPage({ params }: PageProps) {
   const munSlug = slugify(station.municipio);
   const opSlug = slugify(station.operador);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
 
   // Schema.org estructurado JSON-LD específico para punto de recarga
   const stationJsonLd = {
@@ -61,7 +64,7 @@ export default async function PuntoPage({ params }: PageProps) {
     '@type': 'ChargingStation',
     name: station.nombre,
     description: `Estación de recarga pública de ${station.potencia_max_kw} kW operada por ${station.operador} en ${station.municipio}, ${station.provincia}.`,
-    url: `${siteUrl}/punto/${slug}`,
+    url: absoluteUrl(`/punto/${slug}`),
     geo: {
       '@type': 'GeoCoordinates',
       latitude: station.lat,
@@ -127,9 +130,9 @@ export default async function PuntoPage({ params }: PageProps) {
             <MapPin className="h-4 w-4 text-orange-500 shrink-0" />
             <span>
               {station.direccion ? `${station.direccion}, ` : ''}
-              <Link href={`/provincia/${provSlug}/${munSlug}`} className="font-bold text-[var(--text-primary)] hover:underline">
+              <InternalLink href={`/provincia/${provSlug}/${munSlug}`} className="font-bold text-[var(--text-primary)] hover:underline">
                 {station.municipio}
-              </Link>{' '}
+              </InternalLink>{' '}
               ({station.provincia})
               {station.codigo_postal ? ` · CP ${station.codigo_postal}` : ''}
             </span>
@@ -240,7 +243,7 @@ export default async function PuntoPage({ params }: PageProps) {
         </h2>
         <div className="rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-md">
           <ClientMap
-            stations={[station]}
+            stations={[toMapPoint(toHomeStation(station))]}
             center={[station.lat, station.lng]}
             zoom={16}
             height="360px"

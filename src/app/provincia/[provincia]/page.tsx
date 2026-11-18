@@ -3,8 +3,13 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAllProvincias, getProvinciaBySlug, getStationsByProvincia, getGlobalSummary } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { InternalLink } from '@/components/InternalLink';
+import { absoluteUrl } from '@/lib/site';
+import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
 import { Zap, MapPin, Building2, BatteryCharging, ChevronRight, Layers } from 'lucide-react';
+
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ provincia: string }>;
@@ -22,7 +27,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const prov = getProvinciaBySlug(slug);
   if (!prov) return { title: 'Provincia no encontrada' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://electrocarga.es';
   const title = `Puntos de Recarga en ${prov.provincia} (${prov.total_puntos} Estaciones)`;
   const description = `Guía de ${prov.total_puntos} puntos de recarga en ${prov.provincia}. Desglose de cargadores ultrarrápidos (>100 kW), rápidos y conectores Mennekes/CCS2 en ${prov.municipios.length} municipios.`;
 
@@ -30,12 +34,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `${siteUrl}/provincia/${slug}`,
+      canonical: absoluteUrl(`/provincia/${slug}`),
     },
     openGraph: {
       title,
       description,
-      url: `${siteUrl}/provincia/${slug}`,
+      url: absoluteUrl(`/provincia/${slug}`),
       type: 'website',
     }
   };
@@ -144,7 +148,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
         </h2>
         <div className="rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-md">
           <ClientMap
-            stations={stations}
+            stations={stations.map((station) => toMapPoint(toHomeStation(station)))}
             center={[avgLat, avgLng]}
             zoom={9}
             height="450px"
@@ -205,14 +209,14 @@ export default async function ProvinciaPage({ params }: PageProps) {
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {prov.municipios.map((mun) => (
-            <Link
+            <InternalLink
               key={mun.slug}
               href={`/provincia/${slug}/${mun.slug}`}
               className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-orange-500 hover:bg-orange-500/5 transition-all text-xs"
             >
               <span className="font-semibold text-[var(--text-primary)] truncate">{mun.municipio}</span>
               <span className="text-[10px] font-bold text-orange-500 shrink-0 ml-1">{mun.count}</span>
-            </Link>
+            </InternalLink>
           ))}
         </div>
       </section>

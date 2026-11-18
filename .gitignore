@@ -10,3 +10,5 @@ dist/
 # Datos personales del titular (ver config/titular.example.json)
 /config/titular.json
 out/
+public/datos/
+*.tsbuildinfo

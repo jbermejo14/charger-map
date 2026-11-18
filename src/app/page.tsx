@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getGlobalSummary } from '@/lib/data';
 import HomeExplorer from '@/components/HomeExplorer';
+import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Buscador de Puntos de Recarga de Coches Eléctricos en España',
   description: 'Mapa con más de 12.000 puntos de recarga del registro RIPREE del Ministerio en España. Filtra por potencia (ultrarrápida, rápida), tipo de conector y operador.',
   alternates: {
-    canonical: '/',
+    canonical: absoluteUrl('/'),
   },
 };
 
