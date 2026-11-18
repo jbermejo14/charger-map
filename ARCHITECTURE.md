@@ -108,3 +108,68 @@ Como el R4 de `../recalls-web/ARCHITECTURE.md` y las secciones 2.2, 2.3 y 2.6 de
   - una provincia, un municipio, un punto, un operador y la calculadora;
   - los legales;
   - en claro y oscuro, a 375 y 1280 px.
+
+## 5. Contenido propio de las fichas de punto (SEO, noviembre de 2026)
+
+### 5.1 Objetivo y alcance
+
+La auditoría SEO del 18/11/2026 (`../ododex-sitio/docs/09-auditoria-seo-2026-11.md`) encontró estos problemas en las fichas de punto (12 114 páginas):
+
+- unas 155 palabras;
+- un parecido del 55 % entre fichas;
+- un `h1` que es el código interno del punto ("E-A-SantaPola-003").
+
+Cada ficha debe tener un título legible, una frase propia y enlaces a sus vecinas.
+
+Fuera de alcance:
+
+- enlaces a otras secciones de Ododex;
+- cambios en otras páginas;
+- cambios en slugs o URLs;
+- cambios en `scripts/` y en los datos.
+
+### 5.2 Módulos
+
+#### C3 — `src/lib/stationInsights.ts` (funciones puras, sin E/S)
+
+- `distanceKm(a: {lat, lng}, b: {lat, lng}): number`: distancia haversine.
+- `nearbyStations(station: StationRecord, candidates: StationRecord[], options?: { maxKm?: number; limit?: number }): Array<{ station: StationRecord; km: number }>`:
+  - devuelve los puntos más cercanos, sin contar el propio y sin contar los que estén en las mismas coordenadas exactas que él (mismo emplazamiento);
+  - solo los que están dentro de `maxKm`, ordenados por distancia;
+  - constantes `NEARBY_MAX_KM = 10` y `NEARBY_LIMIT = 6`.
+- `stationDisplayTitle(station: StationRecord): string`:
+  - formato: "Punto de recarga {operador} en {municipio} · {kW} kW". Los kW salen como entero si no tienen decimales y con coma si los tienen;
+  - si el operador está vacío o es genérico (por ejemplo "Desconocido" u "Otros"; revisa los valores reales en `src/data/`), se usa "Punto de recarga en {municipio} · {kW} kW".
+- `stationSummary(station: StationRecord, municipalityStations: StationRecord[]): string` devuelve un párrafo en español que combina:
+  - cuántos puntos hay en el municipio ("Es uno de los 14 puntos de recarga públicos de Santa Pola", o "Es el único punto de recarga público registrado en X");
+  - su potencia comparada con el resto ("el más potente del municipio" / "el más potente del municipio es de 150 kW");
+  - cuántos son de carga rápida (≥ 50 kW) en el municipio;
+  - los conectores, en lenguaje natural ("con 2 conectores Tipo 2").
+
+  Los umbrales van en constantes con nombre y deben coincidir con los que ya usa la página (rápida ≥ 50 kW, ultrarrápida ≥ 150 kW).
+
+#### C4 — Ficha `src/app/punto/[slug]/page.tsx`
+
+- **Título y `h1`:** el título del documento y el `h1` pasan a `stationDisplayTitle(station)`. El código `station.nombre` se muestra en la línea de etiquetas, junto al ID de RIPREE ("Código: E-A-SantaPola-003").
+- **Migas de pan:** el último elemento de la miga y el `name` del JSON-LD pueden seguir siendo `station.nombre`; elige el más claro y justifícalo en el informe.
+- **Resumen:** bajo el `h1`, un párrafo con `stationSummary(...)`. Los puntos del municipio salen de `getStationsByMunicipio`.
+- **Sección nueva "Puntos de recarga cercanos"** (`h2`), tras los conectores:
+  - los candidatos son los de la provincia (`getStationsByProvincia`), cacheados a nivel de módulo por provincia;
+  - cada elemento lleva `stationDisplayTitle` con `InternalLink` a su ficha (es una ruta solo HTML), la distancia ("a 1,2 km") y el operador;
+  - al final, un enlace a "Todos los puntos de recarga de {municipio}";
+  - si no hay ninguno cercano, la sección no se pinta.
+- **Anuncios:** se mantienen los `AdSlot` actuales, como máximo 3 por página.
+
+### 5.3 Orden
+
+C3 → C4.
+
+### 5.4 Criterios de aceptación
+
+- **`npm test`** pasa con pruebas nuevas para:
+  - `nearbyStations`: orden, límite, exclusión de sí mismo y del mismo emplazamiento, radio;
+  - `stationDisplayTitle`: operador genérico y kW con decimales;
+  - `stationSummary`: único punto, el más potente, caso general y municipio sin carga rápida.
+- **`links.test.ts`** sigue pasando: no hay ningún `<Link>` hacia rutas solo HTML.
+- **`npx tsc --noEmit`** pasa.
+- **En pantalla** (sesión principal): una ficha en un municipio con muchos puntos y otra con uno solo, a 375 y 1280 px.
