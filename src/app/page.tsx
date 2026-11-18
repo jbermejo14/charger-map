@@ -33,7 +33,7 @@ export default function HomePage() {
 
       {/* Sección SEO semántica y legible sin JavaScript */}
       <section className="bg-[var(--bg-surface)] border-t border-[var(--border-color)] py-10 px-4 sm:px-6">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto w-full max-w-7xl">
           <div className="max-w-3xl mb-8">
             <h2 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] tracking-tight">
               Infraestructura de Recarga Pública en España

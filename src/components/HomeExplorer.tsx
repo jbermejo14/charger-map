@@ -125,8 +125,10 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
     setDisplayLimit(CARDS_PAGE_SIZE);
   };
 
+  // Altura explícita y sin flex-1: con flex-1 la altura del contenedor deja de ser definida
+  // y el mapa (height: 100%) se queda en 0 px.
   return (
-    <div className="flex flex-col lg:flex-row flex-1 h-[calc(100svh-var(--header-height))] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-[calc(100svh-var(--header-height))] overflow-hidden">
       {/* Panel Lateral: Filtros y Tarjetas */}
       <aside className="w-full lg:w-[460px] flex flex-col bg-[var(--bg-surface)] border-b lg:border-b-0 lg:border-r border-[var(--border-color)] h-1/2 lg:h-full z-10 overflow-hidden shadow-lg">
         {/* Caja de filtros */}

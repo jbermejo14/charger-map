@@ -91,7 +91,7 @@ export default async function MunicipioPage({ params }: PageProps) {
   const normalCount = stations.filter((s) => s.potencia_max_kw < 50).length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-8">
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 space-y-8">
       {/* Migas de pan */}
       <Breadcrumbs
         items={[

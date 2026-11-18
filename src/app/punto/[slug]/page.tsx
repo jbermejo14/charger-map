@@ -91,7 +91,7 @@ export default async function PuntoPage({ params }: PageProps) {
   const tierName = isUltra ? 'Ultrarrápida (≥150 kW)' : isFast ? 'Rápida (50-149 kW)' : 'Normal / AC (≤22 kW)';
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-8">
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 space-y-8">
       {/* Schema.org JSON-LD */}
       <script
         type="application/ld+json"

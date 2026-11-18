@@ -69,7 +69,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
   const topMunicipioCount = prov.municipios[0]?.count || 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-8">
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 space-y-8">
       {/* Migas de pan */}
       <Breadcrumbs
         items={[
