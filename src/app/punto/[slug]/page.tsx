@@ -1,7 +1,23 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getStationBySlug, getAllStationSlugs, getGlobalSummary } from '@/lib/data';
+import {
+  getStationBySlug,
+  getAllStationSlugs,
+  getGlobalSummary,
+  getStationsByProvincia,
+  getStationsByMunicipio,
+} from '@/lib/data';
+import {
+  nearbyStations,
+  stationDisplayTitle,
+  stationMetaTitle,
+  formatKw,
+  formatMunicipalityName,
+  stationSummary,
+  FAST_CHARGE_MIN_KW,
+  ULTRA_CHARGE_MIN_KW,
+} from '@/lib/stationInsights';
 import { slugify } from '@/lib/slugs';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
@@ -28,8 +44,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const station = getStationBySlug(slug);
   if (!station) return { title: 'Punto de recarga no encontrado' };
 
-  const title = `${station.nombre} - Punto de Recarga en ${station.municipio} (${station.potencia_max_kw} kW)`;
-  const description = `Ficha técnica del punto de recarga ${station.nombre} (${station.operador}) en ${station.municipio}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
+  const title = stationMetaTitle(station);
+  const municipality = formatMunicipalityName(station.municipio);
+  const description = `Ficha técnica del punto de recarga ${station.nombre} (${station.operador}) en ${municipality}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
 
   return {
     title,
@@ -46,6 +63,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function formatKm(km: number): string {
+  return km.toFixed(1).replace('.', ',');
+}
+
 export default async function PuntoPage({ params }: PageProps) {
   const { slug } = await params;
   const station = getStationBySlug(slug);
@@ -57,14 +78,17 @@ export default async function PuntoPage({ params }: PageProps) {
   const provSlug = slugify(station.provincia);
   const munSlug = slugify(station.municipio);
   const opSlug = slugify(station.operador);
-
+  const displayTitle = stationDisplayTitle(station);
+  const municipality = formatMunicipalityName(station.municipio);
+  const summaryText = stationSummary(station, getStationsByMunicipio(provSlug, munSlug));
+  const nearby = nearbyStations(station, getStationsByProvincia(provSlug));
 
   // Schema.org estructurado JSON-LD específico para punto de recarga
   const stationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ChargingStation',
-    name: station.nombre,
-    description: `Estación de recarga pública de ${station.potencia_max_kw} kW operada por ${station.operador} en ${station.municipio}, ${station.provincia}.`,
+    name: displayTitle,
+    description: `Estación de recarga pública de ${station.potencia_max_kw} kW operada por ${station.operador} en ${municipality}, ${station.provincia}.`,
     url: absoluteUrl(`/punto/${slug}`),
     geo: {
       '@type': 'GeoCoordinates',
@@ -86,8 +110,8 @@ export default async function PuntoPage({ params }: PageProps) {
     },
   };
 
-  const isUltra = station.potencia_max_kw >= 150;
-  const isFast = station.potencia_max_kw >= 50 && station.potencia_max_kw < 150;
+  const isUltra = station.potencia_max_kw >= ULTRA_CHARGE_MIN_KW;
+  const isFast = station.potencia_max_kw >= FAST_CHARGE_MIN_KW && station.potencia_max_kw < ULTRA_CHARGE_MIN_KW;
   const tierName = isUltra ? 'Ultrarrápida (≥150 kW)' : isFast ? 'Rápida (50-149 kW)' : 'Normal / AC (≤22 kW)';
 
   return (
@@ -102,8 +126,8 @@ export default async function PuntoPage({ params }: PageProps) {
       <Breadcrumbs
         items={[
           { name: station.provincia, url: `/provincia/${provSlug}` },
-          { name: station.municipio, url: `/provincia/${provSlug}/${munSlug}` },
-          { name: station.nombre, url: `/punto/${slug}` }
+          { name: municipality, url: `/provincia/${provSlug}/${munSlug}` },
+          { name: `Punto de ${formatKw(station.potencia_max_kw)} kW`, url: `/punto/${slug}` }
         ]}
       />
 
@@ -119,12 +143,16 @@ export default async function PuntoPage({ params }: PageProps) {
           <span className="rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
             {tierName}
           </span>
-          <span className="text-xs text-[var(--text-muted)]">ID RIPREE: {station.id}</span>
+          <span className="text-xs text-[var(--text-muted)]">
+            Código: {station.nombre} · ID RIPREE: {station.id}
+          </span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
-          {station.nombre}
+          {displayTitle}
         </h1>
+
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{summaryText}</p>
 
         <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-[var(--text-secondary)]">
           <div className="flex items-center gap-1.5">
@@ -132,7 +160,7 @@ export default async function PuntoPage({ params }: PageProps) {
             <span>
               {station.direccion ? `${station.direccion}, ` : ''}
               <InternalLink href={`/provincia/${provSlug}/${munSlug}`} className="font-bold text-[var(--text-primary)] hover:underline">
-                {station.municipio}
+                {municipality}
               </InternalLink>{' '}
               ({station.provincia})
               {station.codigo_postal ? ` · CP ${station.codigo_postal}` : ''}
@@ -235,6 +263,25 @@ export default async function PuntoPage({ params }: PageProps) {
           ))}
         </div>
       </section>
+
+      {nearby.length > 0 && (
+        <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-3">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Puntos de recarga cercanos</h2>
+          <ul className="space-y-2">
+            {nearby.map(({ station: near, km }) => (
+              <li key={near.id} className="text-sm text-[var(--text-secondary)]">
+                <InternalLink href={`/punto/${near.slug}`} className="font-bold text-[var(--text-primary)] hover:underline">
+                  {stationDisplayTitle(near)}
+                </InternalLink>{' '}
+                · a {formatKm(km)} km · {near.operador}
+              </li>
+            ))}
+          </ul>
+          <InternalLink href={`/provincia/${provSlug}/${munSlug}`} className="text-xs font-bold text-accent hover:underline">
+            Todos los puntos de recarga de {municipality}
+          </InternalLink>
+        </section>
+      )}
 
       <AdSlot />
 
