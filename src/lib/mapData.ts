@@ -113,26 +113,58 @@ export function buildMapPayload(stations: HomeStation[]): MapPayload {
   return { operadores, provincias, puntos };
 }
 
-/** Expande el contenido de `mapa.json` a puntos con nombres completos. */
+const MAP_DATA_REGENERATE_HINT = 'Ejecuta npm run preparar-datos.';
+
+function mapDataCorruptError(detail: string): Error {
+  return new Error(`mapa.json corrupto: ${detail}. ${MAP_DATA_REGENERATE_HINT}`);
+}
+
+/**
+ * Expande el contenido de `mapa.json` a puntos con nombres completos.
+ * Lanza Error si `puntos` no es una lista o un punto apunta a un operador o provincia inexistente.
+ */
 export function parseMapPayload(payload: MapPayload): MapPoint[] {
-  return payload.puntos.map((point) => ({
-    id: point.i,
-    slug: point.s,
-    lat: point.la,
-    lng: point.ln,
-    powerKw: point.p,
-    operator: payload.operadores[point.o],
-    province: payload.provincias[point.v],
-  }));
+  if (!Array.isArray(payload.puntos)) {
+    throw mapDataCorruptError('no contiene la lista de puntos');
+  }
+  return payload.puntos.map((point, index) => {
+    const operator = payload.operadores?.[point.o];
+    const province = payload.provincias?.[point.v];
+    if (operator === undefined) {
+      throw mapDataCorruptError(`el punto ${index} apunta a operador ${point.o} inexistente`);
+    }
+    if (province === undefined) {
+      throw mapDataCorruptError(`el punto ${index} apunta a provincia ${point.v} inexistente`);
+    }
+    return {
+      id: point.i,
+      slug: point.s,
+      lat: point.la,
+      lng: point.ln,
+      powerKw: point.p,
+      operator,
+      province,
+    };
+  });
 }
 
 async function mapDataFetchJson<T>(path: string): Promise<T> {
   const url = assetPath(path);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`No se pudo cargar ${url} (HTTP ${response.status}). Ejecuta npm run preparar-datos y recarga la página.`);
+  const hint = `No se pudo cargar ${url}. ${MAP_DATA_REGENERATE_HINT} y recarga la página.`;
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (cause) {
+    throw new Error(hint, { cause });
   }
-  return (await response.json()) as T;
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar ${url} (HTTP ${response.status}). ${MAP_DATA_REGENERATE_HINT} y recarga la página.`);
+  }
+  try {
+    return (await response.json()) as T;
+  } catch (cause) {
+    throw new Error(hint, { cause });
+  }
 }
 
 /** Descarga los puntos de todo el país para el mapa nacional. */
@@ -141,6 +173,10 @@ export async function fetchMapPoints(): Promise<MapPoint[]> {
 }
 
 /** Descarga el detalle de los puntos de una provincia. */
-export function fetchProvinceStations(provinceSlug: string): Promise<HomeStation[]> {
-  return mapDataFetchJson<HomeStation[]>(provinceDataPath(provinceSlug));
+export async function fetchProvinceStations(provinceSlug: string): Promise<HomeStation[]> {
+  const stations = await mapDataFetchJson<HomeStation[]>(provinceDataPath(provinceSlug));
+  if (!Array.isArray(stations)) {
+    throw new Error(`${provinceDataPath(provinceSlug)} no es una lista de puntos. ${MAP_DATA_REGENERATE_HINT}`);
+  }
+  return stations;
 }

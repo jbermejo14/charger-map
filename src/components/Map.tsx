@@ -38,21 +38,21 @@ const MAP_DIRECTIONS_URL = 'https://www.google.com/maps/dir/?api=1&destination='
 function mapPopupHtml(station: MapPoint): string {
   return `
     <div style="padding: 14px; min-width: 220px; max-width: 280px; font-family: inherit;">
-      <div style="font-size: 11px; font-weight: 800; color: #ff6b00; text-transform: uppercase; margin-bottom: 4px;">
+      <div style="font-size: 11px; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px;">
         ${mapEscapeHtml(station.operator)}
       </div>
-      <p style="font-size: 11px; color: var(--text-secondary, #666); margin-bottom: 10px;">
+      <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">
         ${mapEscapeHtml(station.province)}
       </p>
       <div style="margin-bottom: 10px; font-size: 11px;">
-        <span style="color: #888; display: block; font-size: 10px;">Potencia máx.</span>
-        <strong style="color: #ff6b00; font-size: 13px;">${station.powerKw} kW</strong>
+        <span style="color: var(--text-muted); display: block; font-size: 10px;">Potencia máx.</span>
+        <strong style="color: var(--accent-primary); font-size: 13px;">${station.powerKw} kW</strong>
       </div>
       <div style="display: flex; gap: 6px;">
-        <a href="${assetPath(`/punto/${station.slug}`)}" style="flex: 1; text-align: center; background: #ff6b00; color: #fff; font-weight: 700; font-size: 11px; padding: 6px 10px; border-radius: 6px; text-decoration: none;">
+        <a href="${assetPath(`/punto/${station.slug}`)}" style="flex: 1; text-align: center; background: var(--on-accent-bg); color: var(--on-accent-text); font-weight: 700; font-size: 11px; padding: 6px 10px; border-radius: 6px; text-decoration: none;">
           Ver Ficha
         </a>
-        <a href="${MAP_DIRECTIONS_URL}${station.lat},${station.lng}" target="_blank" rel="noopener noreferrer" style="border: 1px solid #ccc; color: #555; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none;">
+        <a href="${MAP_DIRECTIONS_URL}${station.lat},${station.lng}" target="_blank" rel="noopener noreferrer" style="border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none;">
           Ruta
         </a>
       </div>
@@ -83,9 +83,7 @@ export default function Map({
   // Aplicar capa seleccionada
   const applyTileLayer = (map: any, L: any, layerKey: MapLayerKey) => {
     tileLayersRef.current.forEach((layer) => {
-      try {
-        map.removeLayer(layer);
-      } catch {}
+      map.removeLayer(layer);
     });
     tileLayersRef.current = [];
 
@@ -250,9 +248,7 @@ export default function Map({
     clusterGroup.addLayers(markers);
 
     if (markers.length > 0 && currentStations.length <= 50) {
-      try {
-        map.fitBounds(clusterGroup.getBounds().pad(0.1));
-      } catch {}
+      map.fitBounds(clusterGroup.getBounds().pad(0.1));
     }
   };
 
@@ -296,7 +292,7 @@ export default function Map({
               onClick={() => switchLayer(key)}
               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                 activeLayer === key
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm'
+                  ? 'bg-on-accent text-white shadow-sm'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >

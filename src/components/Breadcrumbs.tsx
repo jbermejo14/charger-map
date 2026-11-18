@@ -40,7 +40,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbListJsonLd) }}
       />
       <nav aria-label="Migas de pan" className="flex items-center text-xs text-[var(--text-muted)] py-3 overflow-x-auto whitespace-nowrap">
-        <Link href="/" className="flex items-center gap-1 hover:text-orange-500 transition-colors">
+        <Link href="/" className="flex items-center gap-1 hover:text-accent transition-colors">
           <Home className="h-3.5 w-3.5" />
           <span>Inicio</span>
         </Link>
@@ -54,7 +54,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                   {item.name}
                 </span>
               ) : (
-                <InternalLink href={item.url} className="hover:text-orange-500 transition-colors">
+                <InternalLink href={item.url} className="hover:text-accent transition-colors">
                   {item.name}
                 </InternalLink>
               )}

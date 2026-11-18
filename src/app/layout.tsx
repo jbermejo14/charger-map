@@ -1,50 +1,89 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { SITE_NAME, absoluteUrl, getSiteUrl } from '@/lib/site';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { AdSenseScript, getAdSenseClient } from '@/components/AdSenseScript';
+import { SITE_NAME, getSiteUrl } from '@/lib/site';
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  themeColor: '#ff6b00',
-};
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+});
+
+/**
+ * Fija el tema antes de pintar para evitar el parpadeo: primero la elección guardada
+ * y, si no hay, la preferencia del sistema. El try/catch cubre un localStorage no disponible.
+ */
+const THEME_SCRIPT = `
+  (function() {
+    var theme = null;
+    try {
+      var saved = localStorage.getItem('ododex-theme');
+      if (saved === 'light' || saved === 'dark') theme = saved;
+      if (!theme) {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        theme = prefersDark ? 'dark' : 'light';
+      }
+    } catch (e) {
+      theme = 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+`;
+
+// Sin `robots` ni `alternates.canonical` globales: cada página indexable define el suyo.
+// Un canonical aquí lo heredarían la 404 y las páginas legales, y apuntarían a la home.
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
     default: `${SITE_NAME} - Buscador de Puntos de Recarga & Calculadora EV en España`,
-    template: `%s | ${SITE_NAME}`
+    template: `%s | ${SITE_NAME}`,
   },
   description: 'Catálogo de más de 12.000 puntos de recarga de vehículos eléctricos en España con datos del registro RIPREE del Ministerio. Encuentra cargadores por provincia, municipio y operador, y calcula tiempos y costes reales.',
-  alternates: {
-    canonical: absoluteUrl('/'),
-  },
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   openGraph: {
-    title: `${SITE_NAME} - Puntos de Recarga y Calculadora EV en España`,
-    description: 'Buscador de puntos de recarga para coches eléctricos en España con mapa interactivo y calculadora de curva de carga.',
-    url: absoluteUrl('/'),
     siteName: SITE_NAME,
     locale: 'es_ES',
     type: 'website',
   },
-  robots: {
-    index: true,
-    follow: true,
-  }
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="es" className="dark">
-      <body className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)] antialiased">
-        <Navbar />
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body>
+        <Header />
         <main className="flex-1 flex flex-col">{children}</main>
-        <Footer />
+        <Footer mostrarConsentimiento={getAdSenseClient() !== null} />
+        <AdSenseScript />
       </body>
     </html>
   );

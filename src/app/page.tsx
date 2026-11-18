@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getGlobalSummary } from '@/lib/data';
 import HomeExplorer from '@/components/HomeExplorer';
+import { AdSlot } from '@/components/AdSlot';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -26,6 +27,10 @@ export default function HomePage() {
       {/* Componente Interactivo Buscador + Mapa */}
       <HomeExplorer summary={summary} />
 
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 my-6 empty:hidden">
+        <AdSlot />
+      </div>
+
       {/* Sección SEO semántica y legible sin JavaScript */}
       <section className="bg-[var(--bg-surface)] border-t border-[var(--border-color)] py-10 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl">
@@ -38,7 +43,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-3">
+          <h3 id="provincias" className="scroll-mt-32 text-xs font-bold uppercase tracking-wider text-accent mb-3">
             Explora Puntos de Recarga por Provincia
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 text-xs">
@@ -46,15 +51,15 @@ export default function HomePage() {
               <Link
                 key={prov.slug}
                 href={`/provincia/${prov.slug}`}
-                className="flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] hover:border-orange-500 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent transition-colors"
               >
                 <span className="font-semibold text-[var(--text-primary)] truncate">{prov.provincia}</span>
-                <span className="text-[10px] font-bold text-orange-500 ml-1 shrink-0">{prov.total_puntos}</span>
+                <span className="text-[10px] font-bold text-accent ml-1 shrink-0">{prov.total_puntos}</span>
               </Link>
             ))}
           </div>
 
-          <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500 mt-8 mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-accent mt-8 mb-3">
             Principales Operadores de Movilidad Eléctrica
           </h3>
           <div className="flex flex-wrap gap-2 text-xs">
@@ -62,12 +67,15 @@ export default function HomePage() {
               <Link
                 key={op.slug}
                 href={`/operador/${op.slug}`}
-                className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] hover:border-orange-500 text-[var(--text-secondary)] hover:text-orange-500 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent text-[var(--text-secondary)] hover:text-accent transition-colors"
               >
                 <strong className="text-[var(--text-primary)]">{op.operador}</strong>{' '}
-                <span className="text-[10px] text-orange-500">({op.total_puntos.toLocaleString('es-ES')})</span>
+                <span className="text-[10px] text-accent">({op.total_puntos.toLocaleString('es-ES')})</span>
               </Link>
             ))}
+          </div>
+          <div className="mt-8">
+            <AdSlot />
           </div>
         </div>
       </section>

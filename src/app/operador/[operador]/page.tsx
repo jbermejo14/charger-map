@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getGlobalSummary, getOperatorBySlug } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { AdSlot } from '@/components/AdSlot';
 import { absoluteUrl } from '@/lib/site';
 import { Building2, Zap, MapPin, ChevronRight, ShieldCheck } from 'lucide-react';
 
@@ -66,13 +67,13 @@ export default async function OperadorPage({ params }: PageProps) {
       {/* Cabecera */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 text-xs font-bold text-orange-500">
+          <span className="rounded-full bg-accent/10 border border-accent/30 px-2.5 py-0.5 text-xs font-bold text-accent">
             Red de Recarga
           </span>
           <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
-          Red de Recarga de <span className="text-orange-500">{op.operador}</span> en España
+          Red de Recarga de <span className="text-accent">{op.operador}</span> en España
         </h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-4xl leading-relaxed">
           El operador <strong>{op.operador}</strong> cuenta con una infraestructura censada de{' '}
@@ -91,7 +92,7 @@ export default async function OperadorPage({ params }: PageProps) {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase">
-            <Zap className="h-4 w-4 text-orange-500" /> Total Estaciones
+            <Zap className="h-4 w-4 text-accent" /> Total Estaciones
           </div>
           <div className="text-3xl font-black text-[var(--text-primary)] mt-1">
             {op.total_puntos.toLocaleString('es-ES')}
@@ -100,17 +101,17 @@ export default async function OperadorPage({ params }: PageProps) {
         </div>
 
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5">
-          <div className="flex items-center gap-2 text-xs font-bold text-orange-500 uppercase">
+          <div className="flex items-center gap-2 text-xs font-bold text-accent uppercase">
             <MapPin className="h-4 w-4" /> Cobertura Territorial
           </div>
-          <div className="text-3xl font-black text-orange-500 mt-1">
+          <div className="text-3xl font-black text-accent mt-1">
             {totalProvincias} de 50
           </div>
           <span className="text-[11px] text-[var(--text-muted)]">provincias con infraestructura</span>
         </div>
 
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5">
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase">
+          <div className="flex items-center gap-2 text-xs font-bold text-positive uppercase">
             <ShieldCheck className="h-4 w-4" /> Registro RIPREE
           </div>
           <div className="text-xl font-black text-[var(--text-primary)] mt-1">
@@ -123,7 +124,7 @@ export default async function OperadorPage({ params }: PageProps) {
       {/* Cobertura por Provincia */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-orange-500" />
+          <MapPin className="h-5 w-5 text-accent" />
           Despliegue de {op.operador} por Provincia ({totalProvincias} Provincias)
         </h2>
 
@@ -134,18 +135,18 @@ export default async function OperadorPage({ params }: PageProps) {
               <Link
                 key={p.slug}
                 href={`/provincia/${p.slug}`}
-                className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4 hover:border-orange-500 transition-all space-y-2"
+                className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4 hover:border-accent transition-all space-y-2"
               >
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-xs text-[var(--text-primary)] group-hover:text-orange-500 transition-colors">
+                  <span className="font-bold text-xs text-[var(--text-primary)] group-hover:text-accent transition-colors">
                     {p.provincia}
                   </span>
-                  <span className="text-xs font-black text-orange-500">
+                  <span className="text-xs font-black text-accent">
                     {p.count} pts
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-[var(--bg-page)] overflow-hidden">
-                  <div style={{ width: `${Math.min(100, Math.max(8, pct))}%` }} className="h-full bg-orange-500" />
+                <div className="h-1.5 w-full rounded-full bg-[var(--bg-body)] overflow-hidden">
+                  <div style={{ width: `${Math.min(100, Math.max(8, pct))}%` }} className="h-full bg-accent" />
                 </div>
                 <span className="text-[10px] text-[var(--text-muted)] block">
                   {pct}% del total de {op.operador}
@@ -155,6 +156,8 @@ export default async function OperadorPage({ params }: PageProps) {
           })}
         </div>
       </section>
+
+      <AdSlot />
 
       {/* Otros operadores */}
       <section className="pt-6 border-t border-[var(--border-color)] space-y-3">
@@ -169,13 +172,15 @@ export default async function OperadorPage({ params }: PageProps) {
               <Link
                 key={otherOp.slug}
                 href={`/operador/${otherOp.slug}`}
-                className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-orange-500 text-[var(--text-secondary)] hover:text-orange-500 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-accent text-[var(--text-secondary)] hover:text-accent transition-colors"
               >
                 {otherOp.operador} ({otherOp.total_puntos})
               </Link>
             ))}
         </div>
       </section>
+
+      <AdSlot />
     </div>
   );
 }

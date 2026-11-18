@@ -10,6 +10,7 @@ import {
   toHomeStation,
   toMapPoint,
   type HomeStation,
+  type MapPayload,
 } from '../src/lib/mapData';
 import { assetPath } from '../src/lib/site';
 
@@ -85,5 +86,22 @@ describe('mapa.json (src/lib/mapData.ts)', () => {
     const bytes = Buffer.byteLength(JSON.stringify(payload));
     assert.equal(payload.puntos.length, stations.length);
     assert.ok(bytes < MAP_DATA_MAX_BYTES, `mapa.json pesa ${bytes} bytes`);
+  });
+
+  it('parseMapPayload rechaza un operador inexistente con un mensaje accionable', () => {
+    const payload = buildMapPayload(fixture);
+    payload.puntos[1].o = 99;
+    assert.throws(() => parseMapPayload(payload), /mapa.json corrupto: el punto 1 apunta a operador 99 inexistente. Ejecuta npm run preparar-datos./);
+  });
+
+  it('parseMapPayload rechaza una provincia inexistente', () => {
+    const payload = buildMapPayload(fixture);
+    payload.puntos[0].v = -1;
+    assert.throws(() => parseMapPayload(payload), /el punto 0 apunta a provincia -1 inexistente/);
+  });
+
+  it('parseMapPayload rechaza un payload sin lista de puntos', () => {
+    const payload = { operadores: [], provincias: [] } as unknown as MapPayload;
+    assert.throws(() => parseMapPayload(payload), /mapa.json corrupto/);
   });
 });

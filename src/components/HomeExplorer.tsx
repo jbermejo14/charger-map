@@ -126,7 +126,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row flex-1 h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row flex-1 h-[calc(100svh-var(--header-height))] overflow-hidden">
       {/* Panel Lateral: Filtros y Tarjetas */}
       <aside className="w-full lg:w-[460px] flex flex-col bg-[var(--bg-surface)] border-b lg:border-b-0 lg:border-r border-[var(--border-color)] h-1/2 lg:h-full z-10 overflow-hidden shadow-lg">
         {/* Caja de filtros */}
@@ -141,7 +141,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
               placeholder="Buscar por municipio, calle o nombre..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] outline-none focus:border-orange-500"
+              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] outline-none focus:border-accent"
             />
           </div>
 
@@ -156,8 +156,8 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 onClick={() => setMinPower(0)}
                 className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   minPower === 0
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'border border-[var(--border-color)] bg-[var(--bg-page)] text-[var(--text-secondary)] hover:border-orange-500'
+                    ? 'bg-on-accent text-white shadow-sm'
+                    : 'border border-[var(--border-color)] bg-[var(--bg-body)] text-[var(--text-secondary)] hover:border-accent'
                 }`}
               >
                 Todas
@@ -167,8 +167,8 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 onClick={() => setMinPower(22)}
                 className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   minPower === 22
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'border border-[var(--border-color)] bg-[var(--bg-page)] text-[var(--text-secondary)] hover:border-orange-500'
+                    ? 'bg-on-accent text-white shadow-sm'
+                    : 'border border-[var(--border-color)] bg-[var(--bg-body)] text-[var(--text-secondary)] hover:border-accent'
                 }`}
               >
                 ≥ 22 kW Semi-rápida
@@ -178,8 +178,8 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 onClick={() => setMinPower(50)}
                 className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   minPower === 50
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'border border-[var(--border-color)] bg-[var(--bg-page)] text-[var(--text-secondary)] hover:border-orange-500'
+                    ? 'bg-on-accent text-white shadow-sm'
+                    : 'border border-[var(--border-color)] bg-[var(--bg-body)] text-[var(--text-secondary)] hover:border-accent'
                 }`}
               >
                 ≥ 50 kW Rápida
@@ -189,8 +189,8 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 onClick={() => setMinPower(150)}
                 className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   minPower === 150
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'border border-[var(--border-color)] bg-[var(--bg-page)] text-[var(--text-secondary)] hover:border-orange-500'
+                    ? 'bg-on-accent text-white shadow-sm'
+                    : 'border border-[var(--border-color)] bg-[var(--bg-body)] text-[var(--text-secondary)] hover:border-accent'
                 }`}
               >
                 ≥ 150 kW Ultrarrápida
@@ -206,7 +206,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 id={provinciaSelectId}
                 value={selectedProvincia}
                 onChange={(e) => setSelectedProvincia(e.target.value)}
-                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] p-1.5 text-xs text-[var(--text-primary)] outline-none focus:border-orange-500"
+                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] p-1.5 text-xs text-[var(--text-primary)] outline-none focus:border-accent"
               >
                 <option value={ALL_PROVINCES}>Todas las Provincias ({summary.provincias.length})</option>
                 {summary.provincias.map((p) => (
@@ -223,7 +223,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 id={operatorSelectId}
                 value={selectedOperator}
                 onChange={(e) => setSelectedOperator(e.target.value)}
-                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] p-1.5 text-xs text-[var(--text-primary)] outline-none focus:border-orange-500"
+                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] p-1.5 text-xs text-[var(--text-primary)] outline-none focus:border-accent"
               >
                 <option value="all">Todos los Operadores</option>
                 {summary.operadores.slice(0, 30).map((op) => (
@@ -244,7 +244,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 disabled={isNationalView}
                 title={isNationalView ? 'Elige una provincia para filtrar por conector' : undefined}
                 onChange={(e) => setSelectedConnector(e.target.value)}
-                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] p-1 text-[11px] text-[var(--text-primary)] outline-none focus:border-orange-500"
+                className="w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] p-1 text-[11px] text-[var(--text-primary)] outline-none focus:border-accent"
               >
                 <option value="all">Todos los conectores</option>
                 <option value="CCS2 (Combo)">CCS2 (Combo)</option>
@@ -257,7 +257,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
             <button
               type="button"
               onClick={resetFilters}
-              className="flex items-center gap-1 text-[11px] font-semibold text-[var(--text-muted)] hover:text-orange-500 px-2 py-1 rounded border border-[var(--border-color)]"
+              className="flex items-center gap-1 text-[11px] font-semibold text-[var(--text-muted)] hover:text-accent px-2 py-1 rounded border border-[var(--border-color)]"
             >
               <RotateCcw className="h-3 w-3" /> Limpiar
             </button>
@@ -267,13 +267,13 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
           <div className="flex items-center justify-between text-xs text-[var(--text-muted)] pt-1 border-t border-[var(--border-color)]">
             <span>
               {isLoadingStations ? (
-                <span className="flex items-center gap-1.5 text-orange-500">
-                  <span className="h-3 w-3 animate-spin rounded-full border border-orange-500 border-t-transparent" />
+                <span className="flex items-center gap-1.5 text-accent">
+                  <span className="h-3 w-3 animate-spin rounded-full border border-accent border-t-transparent" />
                   Cargando...
                 </span>
               ) : (
                 <>
-                  <strong className="text-orange-500">{mapPoints.length.toLocaleString('es-ES')}</strong> estaciones encontradas
+                  <strong className="text-accent">{mapPoints.length.toLocaleString('es-ES')}</strong> estaciones encontradas
                 </>
               )}
             </span>
@@ -286,14 +286,14 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
         {/* Lista de tarjetas con scroll */}
         <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
           {loadError && (
-            <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-[var(--text-primary)]">
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+            <div role="alert" className="flex items-start gap-2 rounded-xl border border-negative/40 bg-negative/10 p-3 text-xs text-[var(--text-primary)]">
+              <AlertCircle className="h-4 w-4 shrink-0 text-negative" />
               <div className="space-y-2">
                 <p>{loadError}</p>
                 <button
                   type="button"
                   onClick={() => setReloadCount((count) => count + 1)}
-                  className="rounded-lg border border-[var(--border-color)] px-2.5 py-1 font-bold hover:border-orange-500"
+                  className="rounded-lg border border-[var(--border-color)] px-2.5 py-1 font-bold hover:border-accent"
                 >
                   Reintentar
                 </button>
@@ -314,23 +314,23 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
               <div
                 key={station.id}
                 onClick={() => setSelectedStationId(station.id)}
-                className="group rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-3 hover:border-orange-500 transition-all cursor-pointer space-y-2"
+                className="group rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-3 hover:border-accent transition-all cursor-pointer space-y-2"
               >
                 <div className="flex justify-between items-start gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-500">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-accent">
                     {station.operador}
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/20">
                     {station.potencia_max_kw} kW
                   </span>
                 </div>
 
-                <h4 className="text-xs font-bold text-[var(--text-primary)] leading-tight group-hover:text-orange-500 transition-colors">
+                <h4 className="text-xs font-bold text-[var(--text-primary)] leading-tight group-hover:text-accent transition-colors">
                   {station.nombre}
                 </h4>
 
                 <div className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
-                  <MapPin className="h-3 w-3 shrink-0 text-orange-500" />
+                  <MapPin className="h-3 w-3 shrink-0 text-accent" />
                   <span className="truncate">
                     <strong>{station.municipio}</strong> ({station.provincia})
                     {station.direccion ? ` · ${station.direccion}` : ''}
@@ -344,7 +344,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                     </span>
                   ))}
                   {station.tipos_carga.map((t, i) => (
-                    <span key={i} className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    <span key={i} className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-positive/10 text-positive border border-positive/20">
                       {t}
                     </span>
                   ))}
@@ -356,13 +356,13 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
                 >
                   <InternalLink
                     href={`/punto/${station.slug}`}
-                    className="font-bold text-orange-500 hover:underline flex items-center gap-0.5"
+                    className="font-bold text-accent hover:underline flex items-center gap-0.5"
                   >
                     Ficha detallada <ChevronRight className="h-3 w-3" />
                   </InternalLink>
                   <Link
                     href={`/calculadora?power=${station.potencia_max_kw}&name=${encodeURIComponent(station.nombre)}`}
-                    className="text-[var(--text-secondary)] hover:text-orange-500 font-semibold"
+                    className="text-[var(--text-secondary)] hover:text-accent font-semibold"
                   >
                     ⚡ Calcular tiempo
                   </Link>
@@ -377,7 +377,7 @@ export default function HomeExplorer({ summary }: HomeExplorerProps) {
               <button
                 type="button"
                 onClick={() => setDisplayLimit((prev) => prev + CARDS_PAGE_SIZE)}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 hover:opacity-95 transition-opacity"
+                className="w-full py-2.5 rounded-xl bg-on-accent text-white text-xs font-bold hover:opacity-95 transition-opacity"
               >
                 Cargar más estaciones (+{CARDS_PAGE_SIZE})
               </button>

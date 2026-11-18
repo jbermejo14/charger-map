@@ -64,8 +64,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
     <div className="space-y-6">
       {/* Banner si viene de una estación específica */}
       {stationName && (
-        <div className="flex items-center gap-3 rounded-xl border border-orange-500/40 bg-orange-500/10 p-4">
-          <Zap className="h-5 w-5 text-orange-500 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 p-4">
+          <Zap className="h-5 w-5 text-accent shrink-0" />
           <div className="text-xs">
             <span className="font-bold text-[var(--text-primary)]">Calculando con datos de la estación: </span>
             <span className="text-[var(--text-secondary)]">{stationName} ({chargerPower} kW)</span>
@@ -75,8 +75,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
 
       {/* 1. Selección de Vehículo */}
       <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-4">
-        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-500">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500/20 text-[11px]">1</span>
+        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20 text-[11px]">1</span>
           Tu Vehículo Eléctrico
         </h3>
 
@@ -86,7 +86,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
             id={vehicleSelectId}
             value={selectedVehicleId}
             onChange={(e) => handleVehicleChange(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2.5 text-xs font-medium text-[var(--text-primary)] outline-none focus:border-orange-500"
+            className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2.5 text-xs font-medium text-[var(--text-primary)] outline-none focus:border-accent"
           >
             {PRECONFIGURED_VEHICLES.map((v) => (
               <option key={v.id} value={v.id}>
@@ -105,8 +105,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               value={batteryCapacity}
               readOnly={!isCustom}
               onChange={(e) => setBatteryCapacity(parseFloat(e.target.value) || 0)}
-              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
-                !isCustom ? 'opacity-80' : 'focus:border-orange-500'
+              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
+                !isCustom ? 'opacity-80' : 'focus:border-accent'
               }`}
             />
           </div>
@@ -118,8 +118,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               value={vehicleMaxPower}
               readOnly={!isCustom}
               onChange={(e) => setVehicleMaxPower(parseFloat(e.target.value) || 0)}
-              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
-                !isCustom ? 'opacity-80' : 'focus:border-orange-500'
+              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
+                !isCustom ? 'opacity-80' : 'focus:border-accent'
               }`}
             />
           </div>
@@ -131,8 +131,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               value={avgConsumption}
               readOnly={!isCustom}
               onChange={(e) => setAvgConsumption(parseFloat(e.target.value) || 0)}
-              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
-                !isCustom ? 'opacity-80' : 'focus:border-orange-500'
+              className={`w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2 text-xs font-medium text-[var(--text-primary)] mt-1 ${
+                !isCustom ? 'opacity-80' : 'focus:border-accent'
               }`}
             />
           </div>
@@ -141,8 +141,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
 
       {/* 2. Rango de Batería deseado (SoC) */}
       <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-4">
-        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-500">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500/20 text-[11px]">2</span>
+        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20 text-[11px]">2</span>
           Nivel de Carga Deseado (SoC)
         </h3>
 
@@ -150,7 +150,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
           <div>
             <div className="flex justify-between text-xs font-semibold mb-1">
               <span className="text-[var(--text-secondary)]">Porcentaje Inicial</span>
-              <span className="text-orange-500 font-bold">{startSoc}%</span>
+              <span className="text-accent font-bold">{startSoc}%</span>
             </div>
             <input
               type="range"
@@ -162,14 +162,14 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
                 if (val >= targetSoc) setTargetSoc(Math.min(100, val + 5));
                 setStartSoc(val);
               }}
-              className="w-full accent-orange-500 cursor-pointer"
+              className="w-full accent-accent cursor-pointer"
             />
           </div>
 
           <div>
             <div className="flex justify-between text-xs font-semibold mb-1">
               <span className="text-[var(--text-secondary)]">Porcentaje Objetivo</span>
-              <span className="text-orange-500 font-bold">{targetSoc}%</span>
+              <span className="text-accent font-bold">{targetSoc}%</span>
             </div>
             <input
               type="range"
@@ -181,7 +181,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
                 if (val <= startSoc) setStartSoc(Math.max(0, val - 5));
                 setTargetSoc(val);
               }}
-              className="w-full accent-orange-500 cursor-pointer"
+              className="w-full accent-accent cursor-pointer"
             />
           </div>
 
@@ -189,21 +189,21 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
             <button
               type="button"
               onClick={() => { setStartSoc(10); setTargetSoc(80); }}
-              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-orange-500 hover:text-orange-500 transition-colors"
+              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-accent hover:text-accent transition-colors"
             >
               10% → 80% (Recomendado)
             </button>
             <button
               type="button"
               onClick={() => { setStartSoc(20); setTargetSoc(80); }}
-              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-orange-500 hover:text-orange-500 transition-colors"
+              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-accent hover:text-accent transition-colors"
             >
               20% → 80%
             </button>
             <button
               type="button"
               onClick={() => { setStartSoc(10); setTargetSoc(100); }}
-              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-page)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-orange-500 hover:text-orange-500 transition-colors"
+              className="flex-1 py-1.5 px-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] text-[11px] font-bold text-[var(--text-secondary)] hover:border-accent hover:text-accent transition-colors"
             >
               10% → 100%
             </button>
@@ -213,8 +213,8 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
 
       {/* 3. Parámetros del Cargador y Tarifa Editable */}
       <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-4">
-        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-500">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500/20 text-[11px]">3</span>
+        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/20 text-[11px]">3</span>
           Punto de Carga y Tarifa
         </h3>
 
@@ -225,7 +225,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               name="currentType"
               checked={!isAC}
               onChange={() => setIsAC(false)}
-              className="accent-orange-500"
+              className="accent-accent"
             />
             Carga Rápida DC
           </label>
@@ -235,7 +235,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               name="currentType"
               checked={isAC}
               onChange={() => setIsAC(true)}
-              className="accent-orange-500"
+              className="accent-accent"
             />
             Carga AC (Lenta / Normal)
           </label>
@@ -251,7 +251,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               max="400"
               value={chargerPower}
               onChange={(e) => setChargerPower(parseFloat(e.target.value) || 22)}
-              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2.5 text-xs font-medium text-[var(--text-primary)] mt-1 focus:border-orange-500"
+              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2.5 text-xs font-medium text-[var(--text-primary)] mt-1 focus:border-accent"
             />
           </div>
           <div>
@@ -259,7 +259,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               <label htmlFor={priceInputId} className="text-[11px] font-semibold text-[var(--text-secondary)]">
                 Tarifa (€ / kWh)
               </label>
-              <span className="text-[10px] text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] text-warning font-bold bg-warning/10 px-1.5 py-0.5 rounded">
                 Ejemplo configurable
               </span>
             </div>
@@ -271,7 +271,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               max="1.50"
               value={userPricePerKwh}
               onChange={(e) => setUserPricePerKwh(parseFloat(e.target.value) || 0)}
-              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] p-2.5 text-xs font-medium text-[var(--text-primary)] mt-1 focus:border-orange-500"
+              className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] p-2.5 text-xs font-medium text-[var(--text-primary)] mt-1 focus:border-accent"
             />
             <p className="text-[10px] text-[var(--text-muted)] mt-1">
               * Introduce la tarifa real de tu operador o app de recarga.
@@ -281,12 +281,12 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
       </section>
 
       {/* 4. Resultados de Estimación */}
-      <section className="rounded-2xl border border-orange-500/40 bg-gradient-to-b from-orange-500/5 to-transparent p-6 shadow-xl space-y-6">
+      <section className="rounded-2xl border border-accent/40 bg-accent/5 p-6 shadow-xl space-y-6">
         <div className="text-center pb-4 border-b border-[var(--border-color)]">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             Tiempo Estimado de Recarga
           </span>
-          <div className="text-4xl sm:text-5xl font-black text-orange-500 tracking-tight my-1">
+          <div className="text-4xl sm:text-5xl font-black text-accent tracking-tight my-1">
             {result.hours > 0 ? `${result.hours}h ${result.minutes}m` : `${result.minutes} min`}
           </div>
           <span className="text-xs text-[var(--text-secondary)]">
@@ -308,7 +308,7 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
           </div>
           <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-3.5 text-center">
             <span className="text-[10px] font-semibold text-[var(--text-muted)] block">Autonomía Ganada</span>
-            <span className="text-lg font-black text-emerald-500">+{result.gainedRangeKm} km</span>
+            <span className="text-lg font-black text-positive">+{result.gainedRangeKm} km</span>
             <span className="text-[10px] text-[var(--text-muted)] block mt-0.5">estimación carretera</span>
           </div>
           <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-3.5 text-center">
@@ -322,19 +322,19 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-[var(--text-secondary)] font-semibold">
             <span>Batería: {startSoc}%</span>
-            <span className="text-orange-500 font-bold">+{addedPct}% añadido</span>
+            <span className="text-accent font-bold">+{addedPct}% añadido</span>
             <span>Objetivo: {targetSoc}%</span>
           </div>
-          <div className="h-4 w-full rounded-full bg-[var(--bg-page)] border border-[var(--border-color)] p-0.5 flex overflow-hidden">
-            <div style={{ width: `${startSoc}%` }} className="h-full bg-neutral-500 rounded-l-full" />
-            <div style={{ width: `${addedPct}%` }} className="h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/50" />
+          <div className="h-4 w-full rounded-full bg-[var(--bg-body)] border border-[var(--border-color)] p-0.5 flex overflow-hidden">
+            <div style={{ width: `${startSoc}%` }} className="h-full bg-muted rounded-l-full" />
+            <div style={{ width: `${addedPct}%` }} className="h-full bg-on-accent" />
             <div style={{ width: `${remainingPct}%` }} className="h-full bg-transparent" />
           </div>
         </div>
 
         {/* Alerta inteligente >80% */}
         {result.warning80 && (
-          <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 text-xs text-amber-500 leading-relaxed">
+          <div className="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3.5 text-xs text-warning leading-relaxed">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
               <strong>Consejo de recarga rápida en viaje:</strong> Cargar entre el 80% y el 100% triplica el tiempo por kWh debido a la curva de protección química de la batería. Suele ser mucho más rápido y rentable desconectar al 80% y continuar el trayecto hasta el próximo punto.
@@ -352,12 +352,12 @@ export default function Calculator({ initialPower, stationName }: CalculatorProp
               {result.phases.map((p, i) => (
                 <div key={i} className="flex justify-between items-center text-xs p-2 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-color)]">
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-orange-500" />
+                    <span className="h-2 w-2 rounded-full bg-accent" />
                     <span>{p.label}</span>
                   </div>
                   <div className="flex items-center gap-3 text-[var(--text-secondary)] font-medium">
                     <span>~{p.avgPower} kW</span>
-                    <strong className="text-orange-500">⏱ {p.minutes} min</strong>
+                    <strong className="text-accent">⏱ {p.minutes} min</strong>
                   </div>
                 </div>
               ))}

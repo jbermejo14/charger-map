@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAllProvincias, getProvinciaBySlug, getStationsByProvincia, getGlobalSummary } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { AdSlot } from '@/components/AdSlot';
 import { InternalLink } from '@/components/InternalLink';
 import { absoluteUrl } from '@/lib/site';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
@@ -80,18 +81,18 @@ export default async function ProvinciaPage({ params }: PageProps) {
       {/* Cabecera Principal */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 text-xs font-bold text-orange-500">
+          <span className="rounded-full bg-accent/10 border border-accent/30 px-2.5 py-0.5 text-xs font-bold text-accent">
             {prov.comunidad}
           </span>
           <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
-          Puntos de Recarga en <span className="text-orange-500">{prov.provincia}</span>
+          Puntos de Recarga en <span className="text-accent">{prov.provincia}</span>
         </h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-4xl leading-relaxed">
           La provincia de <strong>{prov.provincia}</strong> cuenta con un total censado de{' '}
           <strong>{prov.total_puntos.toLocaleString('es-ES')} estaciones de recarga eléctrica de acceso público</strong>. De ellas,{' '}
-          <strong className="text-orange-500">{prov.potencia_ultra} disponen de carga ultrarrápida (&gt;100 kW)</strong>,{' '}
+          <strong className="text-accent">{prov.potencia_ultra} disponen de carga ultrarrápida (&gt;100 kW)</strong>,{' '}
           <strong>{prov.potencia_rapida} de carga rápida (50 a 100 kW)</strong> y {prov.potencia_normal} de recarga normal o semirápida (≤22 kW).
           La red abarca <strong>{prov.municipios.length} municipios</strong>, siendo <strong>{topMunicipio}</strong> la localidad con mayor concentración ({topMunicipioCount} puntos), y <strong>{topOperator}</strong> el operador con mayor despliegue ({topOperatorCount} instalaciones).
         </p>
@@ -101,7 +102,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase">
-            <Zap className="h-4 w-4 text-orange-500" /> Total Puntos
+            <Zap className="h-4 w-4 text-accent" /> Total Puntos
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] mt-1">
             {prov.total_puntos.toLocaleString('es-ES')}
@@ -109,18 +110,18 @@ export default async function ProvinciaPage({ params }: PageProps) {
           <span className="text-[11px] text-[var(--text-muted)]">estaciones censadas</span>
         </div>
 
-        <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-orange-500 uppercase">
+        <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-accent uppercase">
             <Zap className="h-4 w-4" /> Ultrarrápida (&gt;100 kW)
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-orange-500 mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-accent mt-1">
             {prov.potencia_ultra}
           </div>
           <span className="text-[11px] text-[var(--text-muted)]">ideal viajes de larga distancia</span>
         </div>
 
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-500 uppercase">
+          <div className="flex items-center gap-2 text-xs font-bold text-warning uppercase">
             <BatteryCharging className="h-4 w-4" /> Rápida (50-100 kW)
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] mt-1">
@@ -131,7 +132,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
 
         <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase">
-            <Layers className="h-4 w-4 text-sky-500" /> Normal (≤22 kW)
+            <Layers className="h-4 w-4 text-accent" /> Normal (≤22 kW)
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] mt-1">
             {prov.potencia_normal}
@@ -143,7 +144,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
       {/* Mapa de la provincia */}
       <section className="space-y-3">
         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-orange-500" />
+          <MapPin className="h-5 w-5 text-accent" />
           Mapa de Puntos de Recarga en {prov.provincia}
         </h2>
         <div className="rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-md">
@@ -161,7 +162,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
         {/* Conectores */}
         <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-            <Zap className="h-4 w-4 text-orange-500" /> Conectores Disponibles en {prov.provincia}
+            <Zap className="h-4 w-4 text-accent" /> Conectores Disponibles en {prov.provincia}
           </h3>
           <div className="space-y-2">
             {Object.entries(prov.conectores).map(([conector, count]) => {
@@ -172,8 +173,8 @@ export default async function ProvinciaPage({ params }: PageProps) {
                     <span className="text-[var(--text-secondary)]">{conector}</span>
                     <span><strong>{count}</strong> puntos ({pct}%)</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-[var(--bg-page)] overflow-hidden">
-                    <div style={{ width: `${Math.min(100, pct)}%` }} className="h-full bg-orange-500" />
+                  <div className="h-2 w-full rounded-full bg-[var(--bg-body)] overflow-hidden">
+                    <div style={{ width: `${Math.min(100, pct)}%` }} className="h-full bg-accent" />
                   </div>
                 </div>
               );
@@ -184,27 +185,29 @@ export default async function ProvinciaPage({ params }: PageProps) {
         {/* Operadores principales */}
         <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-orange-500" /> Operadores con Cobertura en {prov.provincia}
+            <Building2 className="h-4 w-4 text-accent" /> Operadores con Cobertura en {prov.provincia}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {prov.operadores_principales.slice(0, 10).map((op) => (
               <Link
                 key={op.slug}
                 href={`/operador/${op.slug}`}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-page)] hover:border-orange-500 transition-colors"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent transition-colors"
               >
                 <span className="text-xs font-bold text-[var(--text-primary)] truncate">{op.operador}</span>
-                <span className="text-xs font-black text-orange-500 shrink-0">{op.count}</span>
+                <span className="text-xs font-black text-accent shrink-0">{op.count}</span>
               </Link>
             ))}
           </div>
         </section>
       </div>
 
+      <AdSlot />
+
       {/* Lista de Municipios con puntos de recarga */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-orange-500" />
+          <MapPin className="h-5 w-5 text-accent" />
           Municipios con Puntos de Recarga en {prov.provincia} ({prov.municipios.length})
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -212,14 +215,16 @@ export default async function ProvinciaPage({ params }: PageProps) {
             <InternalLink
               key={mun.slug}
               href={`/provincia/${slug}/${mun.slug}`}
-              className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-orange-500 hover:bg-orange-500/5 transition-all text-xs"
+              className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-accent hover:bg-accent/5 transition-all text-xs"
             >
               <span className="font-semibold text-[var(--text-primary)] truncate">{mun.municipio}</span>
-              <span className="text-[10px] font-bold text-orange-500 shrink-0 ml-1">{mun.count}</span>
+              <span className="text-[10px] font-bold text-accent shrink-0 ml-1">{mun.count}</span>
             </InternalLink>
           ))}
         </div>
       </section>
+
+      <AdSlot />
     </div>
   );
 }

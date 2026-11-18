@@ -24,17 +24,3 @@ export function createStationSlug(id: string, nombre: string): string {
   const cleanName = slugify(nombre);
   return `${cleanId}-${cleanName}`;
 }
-
-/**
- * Extrae el ID a partir del slug de un punto de recarga {id}-{slug}
- */
-export function parseStationSlug(fullSlug: string): { id: string; nameSlug: string } | null {
-  if (!fullSlug) return null;
-  const firstDash = fullSlug.indexOf('-');
-  if (firstDash === -1) {
-    return { id: fullSlug, nameSlug: '' };
-  }
-  const id = fullSlug.slice(0, firstDash);
-  const nameSlug = fullSlug.slice(firstDash + 1);
-  return { id, nameSlug };
-}
