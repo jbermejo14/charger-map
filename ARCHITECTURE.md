@@ -197,3 +197,13 @@ C3 → C4.
   - si no, se usa "Punto de recarga en {municipio} · {kW} kW".
   - El `h1` y el `name` del JSON-LD siguen con `stationDisplayTitle`.
 - **Miga de pan:** el último elemento es "Punto de {kW} kW", más corto.
+
+### 5.6 Metadatos SEO de operador, portada y calculadora (19/11/2026)
+
+Lógica pura en `src/lib/seo.ts`, probada en `tests/seo.test.ts` (recorre los operadores reales).
+
+- **Títulos:** título completo (con " | Ododex", 9 caracteres) de 65 como máximo. Operador: primer candidato que quepa en 65 con el sufijo, en este orden: "Puntos de recarga de {Operador} ({n})", "{Operador}: {n} puntos de recarga", "{Operador}: puntos de recarga", "{Operador}". Si ninguno cabe, el primero con el nombre recortado por palabras completas (a 60) y "…".
+- **Descripciones:** de 120 a 160 caracteres (operador: cola larga o corta según quepa el nombre).
+- **Nombre legible (`readableOperatorName`):** se quitan los puntos finales ("EMAYA." → "Emaya"). Si el nombre ya tiene minúsculas, no se toca. Si llega entero en mayúsculas, se pasa a tipo título ("AJUNTAMENT DE SANTA MARIA DEL CAMI" → "Ajuntament de Santa Maria del Cami"), con partículas (de, del, des, la, el, y…) en minúscula (se evalúan antes que las siglas, salvo la primera palabra), números romanos (I, II, III, IV) en mayúsculas, "d'"/"l'" en minúscula y guiones respetados. Se mantienen en mayúsculas: un nombre de una sola palabra de 4 letras o menos, las siglas de `SEO_KNOWN_ACRONYMS` (EDP, BP, ABB, AENA) y toda palabra sin vocales o con dígitos (X, JV, H2PLT).
+- **Dónde se usa:** título, descripción, `h1`, migas, textos y enlaces a otros operadores de la página de operador, y los enlaces de operadores de la portada.
+- **Portada:** JSON-LD `WebApplication` (`homeJsonLd`; sin `BreadcrumbList` de un solo elemento). Título y descripción acortados. **Calculadora:** título ≤ 60 y descripción ≤ 160.

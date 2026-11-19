@@ -18,6 +18,7 @@ import {
   FAST_CHARGE_MIN_KW,
   ULTRA_CHARGE_MIN_KW,
 } from '@/lib/stationInsights';
+import { readableOperatorName } from '@/lib/seo';
 import { slugify } from '@/lib/slugs';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = stationMetaTitle(station);
   const municipality = formatMunicipalityName(station.municipio);
-  const description = `Ficha técnica del punto de recarga ${station.nombre} (${station.operador}) en ${municipality}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
+  const description = `Ficha técnica del punto de recarga ${station.nombre} (${readableOperatorName(station.operador)}) en ${municipality}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
 
   return {
     title,
@@ -102,7 +103,7 @@ export default async function PuntoPage({ params }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'ChargingStation',
     name: displayTitle,
-    description: `Estación de recarga pública de ${station.potencia_max_kw} kW operada por ${station.operador} en ${municipality}, ${station.provincia}.`,
+    description: `Estación de recarga pública de ${station.potencia_max_kw} kW operada por ${readableOperatorName(station.operador)} en ${municipality}, ${station.provincia}.`,
     url: absoluteUrl(`/punto/${slug}`),
     geo: {
       '@type': 'GeoCoordinates',
@@ -138,7 +139,7 @@ export default async function PuntoPage({ params }: PageProps) {
     ],
     provider: {
       '@type': 'Organization',
-      name: station.operador,
+      name: readableOperatorName(station.operador),
     },
   };
 
@@ -170,7 +171,7 @@ export default async function PuntoPage({ params }: PageProps) {
             href={`/operador/${opSlug}`}
             className="rounded-full bg-accent/10 border border-accent/30 px-3 py-1 text-xs font-black text-accent hover:bg-accent/20 transition-colors uppercase tracking-wider"
           >
-            {station.operador}
+            {readableOperatorName(station.operador)}
           </Link>
           <span className="rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
             {tierName}
@@ -258,7 +259,7 @@ export default async function PuntoPage({ params }: PageProps) {
             Operador
           </span>
           <div className="text-base sm:text-lg font-black text-[var(--text-primary)] mt-1 truncate">
-            {station.operador}
+            {readableOperatorName(station.operador)}
           </div>
           <span className="text-[10px] text-[var(--text-muted)] truncate block">
             {station.operador_original}
@@ -305,7 +306,7 @@ export default async function PuntoPage({ params }: PageProps) {
                 <InternalLink href={`/punto/${near.slug}`} className="font-bold text-[var(--text-primary)] hover:underline">
                   {stationDisplayTitle(near)}
                 </InternalLink>{' '}
-                · a {formatKm(km)} km · {near.operador}
+                · a {formatKm(km)} km · {readableOperatorName(near.operador)}
               </li>
             ))}
           </ul>
@@ -337,7 +338,7 @@ export default async function PuntoPage({ params }: PageProps) {
       <div className="flex items-start gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-4 text-xs text-[var(--text-secondary)]">
         <ShieldCheck className="h-5 w-5 text-accent shrink-0 mt-0.5" />
         <div>
-          <strong>Información verificada:</strong> Este punto está dado de alta en el Registro de Puntos de Recarga (RIPREE) del Ministerio para la Transición Ecológica (fecha de datos: {date}). Al no existir precios regulados ni telemetría obligatoria abierta en tiempo real, consulta la aplicación del operador ({station.operador}) antes de cargar para confirmar la tarifa actual y el estado del conector en este instante.
+          <strong>Información verificada:</strong> Este punto está dado de alta en el Registro de Puntos de Recarga (RIPREE) del Ministerio para la Transición Ecológica (fecha de datos: {date}). Al no existir precios regulados ni telemetría obligatoria abierta en tiempo real, consulta la aplicación del operador ({readableOperatorName(station.operador)}) antes de cargar para confirmar la tarifa actual y el estado del conector en este instante.
         </div>
       </div>
 

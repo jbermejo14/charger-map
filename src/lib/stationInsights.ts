@@ -1,4 +1,5 @@
 import type { StationRecord } from './types';
+import { readableOperatorName } from './seo';
 
 /** Radio máximo, en km, para considerar un punto "cercano". */
 export const NEARBY_MAX_KM = 10;
@@ -105,7 +106,7 @@ function insightsHasOperator(operator: string): boolean {
 
 /** Título legible de la ficha: "Punto de recarga {operador} en {municipio} · {kW} kW". */
 export function stationDisplayTitle(station: StationRecord): string {
-  const operator = insightsHasOperator(station.operador) ? ` ${station.operador.trim()}` : '';
+  const operator = insightsHasOperator(station.operador) ? ` ${readableOperatorName(station.operador)}` : '';
   return `Punto de recarga${operator} en ${formatMunicipalityName(station.municipio)} · ${formatKw(station.potencia_max_kw)} kW`;
 }
 

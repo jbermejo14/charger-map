@@ -3,18 +3,19 @@ import { Suspense } from 'react';
 import CalculatorFromQuery from '@/components/CalculatorFromQuery';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
-import { SITE_NAME, absoluteUrl } from '@/lib/site';
+import { absoluteUrl } from '@/lib/site';
+import { CALCULATOR_META_DESCRIPTION, CALCULATOR_META_TITLE } from '@/lib/seo';
 import { Calculator as CalcIcon, Info, Zap, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Calculadora de Carga de Coche Eléctrico (Tiempo y Coste Real)',
-  description: 'Calcula el tiempo de recarga y el coste en euros para cualquier vehículo eléctrico en España. Simula la curva de desaceleración por encima del 80% y ajusta la potencia de carga y tu tarifa por kWh.',
+  title: CALCULATOR_META_TITLE,
+  description: CALCULATOR_META_DESCRIPTION,
   alternates: {
     canonical: absoluteUrl('/calculadora'),
   },
   openGraph: {
-    title: `Calculadora de Carga de Coche Eléctrico - ${SITE_NAME}`,
-    description: 'Estima con precisión física el tiempo y coste de cargar tu coche eléctrico con curva de potencia y tarifa configurable.',
+    title: CALCULATOR_META_TITLE,
+    description: CALCULATOR_META_DESCRIPTION,
     url: absoluteUrl('/calculadora'),
     type: 'website',
   }

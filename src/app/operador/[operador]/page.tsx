@@ -5,6 +5,7 @@ import { getGlobalSummary, getOperatorBySlug } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
 import { absoluteUrl } from '@/lib/site';
+import { operatorMetaDescription, operatorMetaTitle, readableOperatorName } from '@/lib/seo';
 import { Building2, Zap, MapPin, ChevronRight, ShieldCheck } from 'lucide-react';
 
 export const dynamicParams = false;
@@ -25,8 +26,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const op = getOperatorBySlug(slug);
   if (!op) return { title: 'Operador no encontrado' };
 
-  const title = `Puntos de Recarga de ${op.operador} en España (${op.total_puntos.toLocaleString('es-ES')} Estaciones)`;
-  const description = `Consulta la red de ${op.total_puntos.toLocaleString('es-ES')} puntos de recarga de ${op.operador} en España. Cobertura provincial, desgloses de potencia y mapa de estaciones.`;
+  const title = operatorMetaTitle(op.operador, op.total_puntos);
+  const description = operatorMetaDescription(op.operador, op.total_puntos);
 
   return {
     title,
@@ -48,6 +49,7 @@ export default async function OperadorPage({ params }: PageProps) {
   const op = getOperatorBySlug(slug);
   if (!op) notFound();
 
+  const operatorName = readableOperatorName(op.operador);
   const summary = getGlobalSummary();
   const date = summary.metadata.fecha_datos;
 
@@ -60,7 +62,7 @@ export default async function OperadorPage({ params }: PageProps) {
       <Breadcrumbs
         items={[
           { name: 'Operadores', url: '/' },
-          { name: op.operador, url: `/operador/${slug}` }
+          { name: operatorName, url: `/operador/${slug}` }
         ]}
       />
 
@@ -73,10 +75,10 @@ export default async function OperadorPage({ params }: PageProps) {
           <span className="text-xs text-[var(--text-muted)]">Censo RIPREE · {date}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] tracking-tight">
-          Red de Recarga de <span className="text-accent">{op.operador}</span> en España
+          Red de Recarga de <span className="text-accent">{operatorName}</span> en España
         </h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-4xl leading-relaxed">
-          El operador <strong>{op.operador}</strong> cuenta con una infraestructura censada de{' '}
+          El operador <strong>{operatorName}</strong> cuenta con una infraestructura censada de{' '}
           <strong>{op.total_puntos.toLocaleString('es-ES')} estaciones de recarga de acceso público</strong> distribuidas a lo largo de{' '}
           <strong>{totalProvincias} provincias</strong> en el territorio español.
           {topProvincias.length > 0 && (
@@ -125,7 +127,7 @@ export default async function OperadorPage({ params }: PageProps) {
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
           <MapPin className="h-5 w-5 text-accent" />
-          Despliegue de {op.operador} por Provincia ({totalProvincias} Provincias)
+          Despliegue de {operatorName} por Provincia ({totalProvincias} Provincias)
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -149,7 +151,7 @@ export default async function OperadorPage({ params }: PageProps) {
                   <div style={{ width: `${Math.min(100, Math.max(8, pct))}%` }} className="h-full bg-accent" />
                 </div>
                 <span className="text-[10px] text-[var(--text-muted)] block">
-                  {pct}% del total de {op.operador}
+                  {pct}% del total de {operatorName}
                 </span>
               </Link>
             );
@@ -174,7 +176,7 @@ export default async function OperadorPage({ params }: PageProps) {
                 href={`/operador/${otherOp.slug}`}
                 className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] hover:border-accent text-[var(--text-secondary)] hover:text-accent transition-colors"
               >
-                {otherOp.operador} ({otherOp.total_puntos})
+                {readableOperatorName(otherOp.operador)} ({otherOp.total_puntos})
               </Link>
             ))}
         </div>

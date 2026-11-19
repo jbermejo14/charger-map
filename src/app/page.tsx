@@ -4,11 +4,13 @@ import { getGlobalSummary } from '@/lib/data';
 import HomeExplorer from '@/components/HomeExplorer';
 import { AdSlot } from '@/components/AdSlot';
 import { absoluteUrl } from '@/lib/site';
+import { HOME_META_TITLE, homeJsonLd, homeMetaDescription, readableOperatorName } from '@/lib/seo';
+
+const HOME_DESCRIPTION = homeMetaDescription(getGlobalSummary().metadata.total_estaciones);
 
 export const metadata: Metadata = {
-  title: 'Buscador de Puntos de Recarga de Coches Eléctricos en España',
-  description:
-    'Mapa con más de 12.000 puntos de recarga del registro oficial RIPREE en España. Filtra por potencia ultrarrápida, tipo de conector y operador.',
+  title: HOME_META_TITLE,
+  description: HOME_DESCRIPTION,
   alternates: {
     canonical: absoluteUrl('/'),
   },
@@ -53,6 +55,7 @@ export default function HomePage() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd(HOME_DESCRIPTION)) }} />
       <h1 className="sr-only">
         Buscador de Puntos de Recarga de Coches Eléctricos en España - Mapa
       </h1>
@@ -102,7 +105,7 @@ export default function HomePage() {
                 href={`/operador/${op.slug}`}
                 className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent text-[var(--text-secondary)] hover:text-accent transition-colors"
               >
-                <strong className="text-[var(--text-primary)]">{op.operador}</strong>{' '}
+                <strong className="text-[var(--text-primary)]">{readableOperatorName(op.operador)}</strong>{' '}
                 <span className="text-[10px] text-accent">({op.total_puntos.toLocaleString('es-ES')})</span>
               </Link>
             ))}
