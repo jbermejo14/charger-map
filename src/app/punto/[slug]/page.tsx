@@ -23,6 +23,8 @@ import { slugify } from '@/lib/slugs';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
 import { InternalLink } from '@/components/InternalLink';
+import { NetworkLinks } from '@/components/NetworkLinks';
+import { municipalityNetworkKey } from '@/lib/network';
 import { absoluteUrl } from '@/lib/site';
 import ClientMap from '@/components/ClientMap';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
@@ -341,6 +343,8 @@ export default async function PuntoPage({ params }: PageProps) {
           <strong>Información verificada:</strong> Este punto está dado de alta en el Registro de Puntos de Recarga (RIPREE) del Ministerio para la Transición Ecológica (fecha de datos: {date}). Al no existir precios regulados ni telemetría obligatoria abierta en tiempo real, consulta la aplicación del operador ({readableOperatorName(station.operador)}) antes de cargar para confirmar la tarifa actual y el estado del conector en este instante.
         </div>
       </div>
+
+      <NetworkLinks routeKey={municipalityNetworkKey(provSlug, munSlug)} />
 
       <AdSlot />
     </div>

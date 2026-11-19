@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { getGlobalSummary } from '@/lib/data';
 import { SITE_NAME } from '@/lib/site';
+import { getNetworkSections } from '@/lib/network';
 import { ConsentSettingsButton } from '@/components/ConsentSettingsButton';
 
 const RIPREE_EXPORT_URL = 'https://energia.serviciosmin.gob.es/Ripree/ExportarInstalaciones/Export';
@@ -42,6 +43,7 @@ export interface FooterProps {
 /** Pie con la fuente de los datos (RIPREE), el aviso de sitio no oficial y los enlaces legales. */
 export function Footer({ mostrarConsentimiento = false }: FooterProps) {
   const { metadata } = getGlobalSummary();
+  const networkSections = getNetworkSections();
   const total = metadata.total_estaciones.toLocaleString('es-ES');
 
   return (
@@ -75,6 +77,16 @@ export function Footer({ mostrarConsentimiento = false }: FooterProps) {
             ))}
           </div>
         ))}
+        {networkSections.length > 0 && (
+          <div className="footer-links">
+            <span>Otras webs de Ododex:</span>
+            {networkSections.map(section => (
+              <a key={section.ruta} href={section.ruta} title={section.descripcion}>
+                {section.nombre}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </footer>
   );

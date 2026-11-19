@@ -5,6 +5,8 @@ import { getAllProvincias, getProvinciaBySlug, getStationsByProvincia, getGlobal
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
 import { InternalLink } from '@/components/InternalLink';
+import { NetworkLinks } from '@/components/NetworkLinks';
+import { provinceNetworkKey } from '@/lib/network';
 import { absoluteUrl } from '@/lib/site';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
@@ -237,6 +239,8 @@ export default async function ProvinciaPage({ params }: PageProps) {
           ))}
         </div>
       </section>
+
+      <NetworkLinks routeKey={provinceNetworkKey(slug)} />
 
       <AdSlot />
     </div>

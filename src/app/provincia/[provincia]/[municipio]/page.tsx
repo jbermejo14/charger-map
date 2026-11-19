@@ -5,14 +5,15 @@ import { getAllProvincias, getProvinciaBySlug, getStationsByMunicipio, getStatio
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
 import { InternalLink } from '@/components/InternalLink';
-import { absoluteUrl, getSiteUrl } from '@/lib/site';
+import { NetworkLinks } from '@/components/NetworkLinks';
+import { municipalityNetworkKey } from '@/lib/network';
+import { absoluteUrl } from '@/lib/site';
 import { slugify } from '@/lib/slugs';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
 import { distanceKm, FAST_CHARGE_MIN_KW, formatKw } from '@/lib/stationInsights';
-import { getNetworkLinksForRoute } from '@/lib/network';
 import type { StationRecord } from '@/lib/types';
-import { Zap, MapPin, Building2, ChevronRight, Navigation, Layers, BatteryCharging } from 'lucide-react';
+import { Zap, MapPin, Building2, Navigation, BatteryCharging } from 'lucide-react';
 
 export const dynamicParams = false;
 
@@ -127,27 +128,6 @@ export default async function MunicipioPage({ params }: PageProps) {
       nearestFastStation = { station: best, km: minD };
     }
   }
-
-  // Enlaces cruzados de la red Ododex
-  const networkLinks = getNetworkLinksForRoute(`/es/puntos-recarga/provincia/${provSlug}/${munSlug}`);
-  const fallbackLinks = [
-    {
-      seccion: '/es/gasolineras',
-      texto: `Gasolineras en ${mun.municipio}`,
-      href: `/es/gasolineras/provincia/${provSlug}/${munSlug}`,
-    },
-    {
-      seccion: '/es/electrico-vs-gasolina',
-      texto: `Comparativa eléctrico vs gasolina en ${prov.provincia}`,
-      href: `/es/electrico-vs-gasolina/${provSlug}`,
-    },
-    {
-      seccion: '/es/itv',
-      texto: `Centros ITV en ${prov.provincia}`,
-      href: `/es/itv/centros/${provSlug}`,
-    },
-  ];
-  const crossLinks = networkLinks.length > 0 ? networkLinks : fallbackLinks;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 space-y-8">
@@ -286,29 +266,6 @@ export default async function MunicipioPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Red Ododex: Movilidad y Servicios */}
-      <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-3 shadow-sm">
-        <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-          <Layers className="h-5 w-5 text-accent" />
-          Movilidad y Servicios en {mun.municipio}
-        </h2>
-        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-          Consulta precios de combustible, comparativas de consumo y requisitos de tráfico para {mun.municipio} y la provincia de {prov.provincia}:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
-          {crossLinks.map((link, idx) => (
-            <a
-              key={idx}
-              href={`${getSiteUrl()}${link.href}`}
-              className="flex items-center justify-between p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent transition-colors text-xs font-semibold group"
-            >
-              <span className="text-[var(--text-primary)] group-hover:text-accent">{link.texto}</span>
-              <ChevronRight className="h-4 w-4 text-[var(--text-muted)] group-hover:text-accent shrink-0 ml-2" />
-            </a>
-          ))}
-        </div>
-      </section>
-
       <AdSlot />
 
       {/* Municipios cercanos en la misma provincia */}
@@ -332,6 +289,8 @@ export default async function MunicipioPage({ params }: PageProps) {
           </div>
         </section>
       )}
+
+      <NetworkLinks routeKey={municipalityNetworkKey(provSlug, munSlug)} />
 
       <AdSlot />
     </div>

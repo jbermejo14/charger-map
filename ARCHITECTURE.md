@@ -207,3 +207,12 @@ Lógica pura en `src/lib/seo.ts`, probada en `tests/seo.test.ts` (recorre los op
 - **Nombre legible (`readableOperatorName`):** se quitan los puntos finales ("EMAYA." → "Emaya"). Si el nombre ya tiene minúsculas, no se toca. Si llega entero en mayúsculas, se pasa a tipo título ("AJUNTAMENT DE SANTA MARIA DEL CAMI" → "Ajuntament de Santa Maria del Cami"), con partículas (de, del, des, la, el, y…) en minúscula (se evalúan antes que las siglas, salvo la primera palabra), números romanos (I, II, III, IV) en mayúsculas, "d'"/"l'" en minúscula y guiones respetados. Se mantienen en mayúsculas: un nombre de una sola palabra de 4 letras o menos, las siglas de `SEO_KNOWN_ACRONYMS` (EDP, BP, ABB, AENA) y toda palabra sin vocales o con dígitos (X, JV, H2PLT).
 - **Dónde se usa:** título, descripción, `h1`, migas, textos y enlaces a otros operadores de la página de operador, y los enlaces de operadores de la portada.
 - **Portada:** JSON-LD `WebApplication` (`homeJsonLd`; sin `BreadcrumbList` de un solo elemento). Título y descripción acortados. **Calculadora:** título ≤ 60 y descripción ≤ 160.
+
+### 5.7 Enlaces de la red de Ododex (19/11/2026)
+
+Implementa la sección 10 de `../ododex-sitio/ARCHITECTURE.md`.
+
+- **`src/lib/network.ts`:** lee en compilación el JSON de la ruta de `ODODEX_RED_ENLACES`, con caché en memoria por ruta. Sin variable o sin fichero devuelve "sin red" (`[]`), sin error; JSON inválido, `version !== 1` o estructura incorrecta lanzan `Error` en español. Funciones: `getNetworkLinks(clave)`, `getNetworkSections()` (excluye `BASE_PATH`), `provinceNetworkKey` y `municipalityNetworkKey` (clave = ruta desde la raíz del dominio sin barra final, con los slugs de la web).
+- **`NetworkLinks`** (« En Ododex también »): tras el contenido y antes del último `AdSlot` de provincia, municipio y ficha de punto (esta con los enlaces de su municipio). Los `href` son de otra sección: `<a href>` tal cual, sin `InternalLink`, `next/link` ni `assetPath`.
+- **`Footer`:** « Otras webs de Ododex » con las secciones de la red, sin la propia.
+- Pruebas: `tests/network.test.ts`.
