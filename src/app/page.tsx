@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { getGlobalSummary } from '@/lib/data';
 import HomeExplorer from '@/components/HomeExplorer';
 import { AdSlot } from '@/components/AdSlot';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import { HOME_META_TITLE, homeJsonLd, homeMetaDescription, readableOperatorName } from '@/lib/seo';
 
 const HOME_DESCRIPTION = homeMetaDescription(getGlobalSummary().metadata.total_estaciones);
 
 export const metadata: Metadata = {
-  title: HOME_META_TITLE,
+  // La plantilla "%s | Ododex" del layout no se aplica a la página de su mismo segmento.
+  title: { absolute: `${HOME_META_TITLE} | ${SITE_NAME}` },
   description: HOME_DESCRIPTION,
   alternates: {
     canonical: absoluteUrl('/'),
