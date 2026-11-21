@@ -7,9 +7,29 @@ import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Buscador de Puntos de Recarga de Coches Eléctricos en España',
-  description: 'Mapa con más de 12.000 puntos de recarga del registro RIPREE del Ministerio en España. Filtra por potencia (ultrarrápida, rápida), tipo de conector y operador.',
+  description:
+    'Mapa con más de 12.000 puntos de recarga del registro oficial RIPREE en España. Filtra por potencia ultrarrápida, tipo de conector y operador.',
   alternates: {
     canonical: absoluteUrl('/'),
+  },
+  openGraph: {
+    title: 'Buscador de Puntos de Recarga de Coches Eléctricos en España',
+    description:
+      'Mapa con más de 12.000 puntos de recarga del registro oficial RIPREE en España. Filtra por potencia ultrarrápida, tipo de conector y operador.',
+    url: absoluteUrl('/'),
+    type: 'website',
+    images: [
+      {
+        url: absoluteUrl('/brand/ododex-og.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Puntos de Recarga en España · Ododex',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [absoluteUrl('/brand/ododex-og.png')],
   },
 };
 
@@ -18,14 +38,27 @@ export default function HomePage() {
   const total = summary.metadata.total_estaciones.toLocaleString('es-ES');
   const date = summary.metadata.fecha_datos;
 
+  const explorerSummary = {
+    provincias: summary.provincias.map((p) => ({
+      slug: p.slug,
+      provincia: p.provincia,
+      total_puntos: p.total_puntos,
+    })),
+    operadores: summary.operadores.slice(0, 30).map((op) => ({
+      slug: op.slug,
+      operador: op.operador,
+      total_puntos: op.total_puntos,
+    })),
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <h1 className="sr-only">
         Buscador de Puntos de Recarga de Coches Eléctricos en España - Mapa
       </h1>
 
-      {/* Componente Interactivo Buscador + Mapa */}
-      <HomeExplorer summary={summary} />
+      {/* Componente Interactivo Buscador + Mapa con payload ligero */}
+      <HomeExplorer summary={explorerSummary} />
 
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 my-6 empty:hidden">
         <AdSlot />

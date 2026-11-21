@@ -59,7 +59,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url: absoluteUrl(`/punto/${slug}`),
       type: 'website',
-    }
+      images: [
+        {
+          url: absoluteUrl('/brand/ododex-og.png'),
+          width: 1200,
+          height: 630,
+          alt: `${title} · Ododex`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [absoluteUrl('/brand/ododex-og.png')],
+    },
   };
 }
 
@@ -103,7 +117,25 @@ export default async function PuntoPage({ params }: PageProps) {
       postalCode: station.codigo_postal || undefined,
       addressCountry: 'ES',
     },
+    maximumOutput: `${station.potencia_max_kw} kW`,
+    connectorType: station.conectores,
     openingHours: station.horario && station.horario !== 'No especificado' ? station.horario : 'Mo-Su 00:00-23:59',
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+        opens: '00:00',
+        closes: '23:59',
+      },
+    ],
     provider: {
       '@type': 'Organization',
       name: station.operador,

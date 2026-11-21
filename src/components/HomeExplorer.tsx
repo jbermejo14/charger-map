@@ -9,8 +9,13 @@ import { InternalLink } from '@/components/InternalLink';
 import ClientMap from '@/components/ClientMap';
 import { Search, MapPin, ChevronRight, RotateCcw, AlertCircle } from 'lucide-react';
 
+export interface HomeExplorerSummary {
+  provincias: Array<{ slug: string; provincia: string; total_puntos: number }>;
+  operadores: Array<{ slug: string; operador: string; total_puntos: number }>;
+}
+
 interface HomeExplorerProps {
-  summary: GlobalSummary;
+  summary: HomeExplorerSummary;
 }
 
 const ALL_PROVINCES = 'all';

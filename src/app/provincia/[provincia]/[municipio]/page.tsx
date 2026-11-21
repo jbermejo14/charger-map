@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAllProvincias, getProvinciaBySlug, getStationsByMunicipio, getGlobalSummary } from '@/lib/data';
+import { getAllProvincias, getProvinciaBySlug, getStationsByMunicipio, getStationsByProvincia, getGlobalSummary } from '@/lib/data';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
 import { InternalLink } from '@/components/InternalLink';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, getSiteUrl } from '@/lib/site';
 import { slugify } from '@/lib/slugs';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
-import { Zap, MapPin, Building2, ChevronRight, Navigation } from 'lucide-react';
+import { distanceKm, FAST_CHARGE_MIN_KW, formatKw } from '@/lib/stationInsights';
+import { getNetworkLinksForRoute } from '@/lib/network';
+import type { StationRecord } from '@/lib/types';
+import { Zap, MapPin, Building2, ChevronRight, Navigation, Layers, BatteryCharging } from 'lucide-react';
 
 export const dynamicParams = false;
 
@@ -58,7 +61,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url: absoluteUrl(`/provincia/${provSlug}/${munSlug}`),
       type: 'website',
-    }
+      images: [
+        {
+          url: absoluteUrl('/brand/ododex-og.png'),
+          width: 1200,
+          height: 630,
+          alt: `${title} · Ododex`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [absoluteUrl('/brand/ododex-og.png')],
+    },
   };
 }
 
@@ -89,6 +106,48 @@ export default async function MunicipioPage({ params }: PageProps) {
   const ultraCount = stations.filter((s) => s.potencia_max_kw > 100).length;
   const rapidaCount = stations.filter((s) => s.potencia_max_kw >= 50 && s.potencia_max_kw <= 100).length;
   const normalCount = stations.filter((s) => s.potencia_max_kw < 50).length;
+
+  const isSmallMunicipality = stations.length <= 2;
+  let nearestFastStation: { station: StationRecord; km: number } | null = null;
+  if (isSmallMunicipality && rapidaCount === 0 && ultraCount === 0) {
+    const provStations = getStationsByProvincia(provSlug);
+    const fastCandidates = provStations.filter(
+      (s) => s.potencia_max_kw >= FAST_CHARGE_MIN_KW && slugify(s.municipio) !== munSlug,
+    );
+    let minD = Infinity;
+    let best: StationRecord | null = null;
+    for (const cand of fastCandidates) {
+      const d = distanceKm({ lat: avgLat, lng: avgLng }, { lat: cand.lat, lng: cand.lng });
+      if (d < minD) {
+        minD = d;
+        best = cand;
+      }
+    }
+    if (best && minD < 100) {
+      nearestFastStation = { station: best, km: minD };
+    }
+  }
+
+  // Enlaces cruzados de la red Ododex
+  const networkLinks = getNetworkLinksForRoute(`/es/puntos-recarga/provincia/${provSlug}/${munSlug}`);
+  const fallbackLinks = [
+    {
+      seccion: '/es/gasolineras',
+      texto: `Gasolineras en ${mun.municipio}`,
+      href: `/es/gasolineras/provincia/${provSlug}/${munSlug}`,
+    },
+    {
+      seccion: '/es/electrico-vs-gasolina',
+      texto: `Comparativa eléctrico vs gasolina en ${prov.provincia}`,
+      href: `/es/electrico-vs-gasolina/${provSlug}`,
+    },
+    {
+      seccion: '/es/itv',
+      texto: `Centros ITV en ${prov.provincia}`,
+      href: `/es/itv/centros/${provSlug}`,
+    },
+  ];
+  const crossLinks = networkLinks.length > 0 ? networkLinks : fallbackLinks;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 space-y-8">
@@ -211,6 +270,42 @@ export default async function MunicipioPage({ params }: PageProps) {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* Contexto comarcal para municipios con pocos puntos */}
+      {nearestFastStation && (
+        <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-2 text-xs">
+          <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+            <BatteryCharging className="h-4 w-4 text-accent" />
+            Carga rápida más cercana a {mun.municipio}
+          </h2>
+          <p className="text-[var(--text-secondary)] leading-relaxed">
+            Actualmente los cargadores de {mun.municipio} son de carga semirápida o normal (≤{Math.max(...stations.map((s) => s.potencia_max_kw))} kW). La estación de carga rápida (≥50 kW) más próxima se ubica en <strong>{nearestFastStation.station.municipio}</strong>, a aproximadamente <strong>{nearestFastStation.km.toFixed(1).replace('.', ',')} km</strong> ({nearestFastStation.station.nombre}, con {formatKw(nearestFastStation.station.potencia_max_kw)} kW operado por {nearestFastStation.station.operador}).
+          </p>
+        </section>
+      )}
+
+      {/* Red Ododex: Movilidad y Servicios */}
+      <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] p-5 space-y-3 shadow-sm">
+        <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
+          <Layers className="h-5 w-5 text-accent" />
+          Movilidad y Servicios en {mun.municipio}
+        </h2>
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+          Consulta precios de combustible, comparativas de consumo y requisitos de tráfico para {mun.municipio} y la provincia de {prov.provincia}:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+          {crossLinks.map((link, idx) => (
+            <a
+              key={idx}
+              href={`${getSiteUrl()}${link.href}`}
+              className="flex items-center justify-between p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-body)] hover:border-accent transition-colors text-xs font-semibold group"
+            >
+              <span className="text-[var(--text-primary)] group-hover:text-accent">{link.texto}</span>
+              <ChevronRight className="h-4 w-4 text-[var(--text-muted)] group-hover:text-accent shrink-0 ml-2" />
+            </a>
+          ))}
         </div>
       </section>
 

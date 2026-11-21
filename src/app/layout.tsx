@@ -4,7 +4,7 @@ import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { AdSenseScript, getAdSenseClient } from '@/components/AdSenseScript';
-import { SITE_NAME, getSiteUrl } from '@/lib/site';
+import { SITE_NAME, getSiteUrl, absoluteUrl } from '@/lib/site';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -49,7 +49,8 @@ export const metadata: Metadata = {
     default: `${SITE_NAME} - Buscador de Puntos de Recarga & Calculadora EV en España`,
     template: `%s | ${SITE_NAME}`,
   },
-  description: 'Catálogo de más de 12.000 puntos de recarga de vehículos eléctricos en España con datos del registro RIPREE del Ministerio. Encuentra cargadores por provincia, municipio y operador, y calcula tiempos y costes reales.',
+  description:
+    'Encuentra más de 12.000 puntos de recarga para coches eléctricos en España con datos oficiales del RIPREE. Consulta potencia, conectores y tarifas reales.',
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -57,6 +58,18 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'es_ES',
     type: 'website',
+    images: [
+      {
+        url: absoluteUrl('/brand/ododex-og.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Puntos de Recarga en España · Ododex',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [absoluteUrl('/brand/ododex-og.png')],
   },
 };
 
