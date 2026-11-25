@@ -11,7 +11,6 @@ import {
 import {
   nearbyStations,
   stationDisplayTitle,
-  stationMetaTitle,
   formatKw,
   formatMunicipalityName,
   stationSummary,
@@ -19,6 +18,7 @@ import {
   ULTRA_CHARGE_MIN_KW,
 } from '@/lib/stationInsights';
 import { readableOperatorName } from '@/lib/seo';
+import { stationMetaDescription, stationMetaTitle } from '@/lib/pageSeoText';
 import { slugify } from '@/lib/slugs';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { AdSlot } from '@/components/AdSlot';
@@ -48,8 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!station) return { title: 'Punto de recarga no encontrado' };
 
   const title = stationMetaTitle(station);
-  const municipality = formatMunicipalityName(station.municipio);
-  const description = `Ficha técnica del punto de recarga ${station.nombre} (${readableOperatorName(station.operador)}) en ${municipality}, ${station.provincia}. Potencia de ${station.potencia_max_kw} kW, conectores ${station.conectores.join(', ')} y cómo llegar.`;
+  const description = stationMetaDescription(station);
 
   return {
     title,

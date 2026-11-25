@@ -8,6 +8,7 @@ import { InternalLink } from '@/components/InternalLink';
 import { NetworkLinks } from '@/components/NetworkLinks';
 import { provinceNetworkKey } from '@/lib/network';
 import { absoluteUrl } from '@/lib/site';
+import { provinceMetaDescription, provinceMetaTitle } from '@/lib/pageSeoText';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
 import { Zap, MapPin, Building2, BatteryCharging, ChevronRight, Layers } from 'lucide-react';
@@ -30,8 +31,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const prov = getProvinciaBySlug(slug);
   if (!prov) return { title: 'Provincia no encontrada' };
 
-  const title = `Puntos de Recarga en ${prov.provincia} (${prov.total_puntos} Estaciones)`;
-  const description = `Guía de ${prov.total_puntos} puntos de recarga en ${prov.provincia}. Desglose de cargadores ultrarrápidos (>100 kW), rápidos y conectores Mennekes/CCS2 en ${prov.municipios.length} municipios.`;
+  const title = provinceMetaTitle(prov.provincia);
+  const description = provinceMetaDescription(prov);
 
   return {
     title,

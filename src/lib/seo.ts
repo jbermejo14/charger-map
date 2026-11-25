@@ -98,7 +98,8 @@ function seoIsParticle(word: string): boolean {
   return word.length <= SEO_PARTICLE_MAX_LETTERS && word === word.toLocaleLowerCase('es');
 }
 
-function seoFormatCount(count: number): string {
+/** Número con separador de millares en español. */
+export function seoFormatCount(count: number): string {
   return count.toLocaleString('es-ES');
 }
 
@@ -171,4 +172,70 @@ export function homeJsonLd(description: string): Record<string, unknown> {
     operatingSystem: 'Web',
     inLanguage: 'es',
   };
+}
+
+const SEO_PLACE_SEPARATORS = /[/,]/;
+const SEO_SENTENCE_SEPARATOR = ' ';
+
+/** Nombre de lugar sin la parte cooficial o aclaratoria: "Castellón/Castelló" → "Castellón". */
+export function shortPlaceName(name: string): string {
+  return name.split(SEO_PLACE_SEPARATORS)[0].trim();
+}
+
+/** Dos nombres de lugar iguales sin distinguir mayúsculas (municipio Madrid en la provincia de Madrid). */
+export function isSamePlace(a: string, b: string): boolean {
+  return a.trim().toLocaleLowerCase('es') === b.trim().toLocaleLowerCase('es');
+}
+
+/** Une frases con un espacio, descartando las vacías. */
+export function joinSentences(...parts: ReadonlyArray<string | null | false>): string {
+  return parts.filter((part): part is string => typeof part === 'string' && part.length > 0).join(SEO_SENTENCE_SEPARATOR);
+}
+
+function seoFirstFitting(variants: readonly string[], maxLength: number): string | undefined {
+  return variants.find((variant) => variant.length <= maxLength);
+}
+
+/**
+ * Elige el título (sin sufijo del sitio) recorriendo los niveles en orden. En cada nivel prefiere la primera
+ * variante que deja el título completo en 60 caracteres y, si no, la primera que lo deja en 65.
+ * Lanza un error si ninguna variante de ningún nivel cabe: nunca devuelve un título fuera de rango.
+ */
+export function pickTitle(...tiers: ReadonlyArray<readonly string[]>): string {
+  const targetBody = SEO_TITLE_TARGET - SEO_TITLE_SUFFIX_LENGTH;
+  const hardBody = SEO_TITLE_HARD_MAX - SEO_TITLE_SUFFIX_LENGTH;
+  for (const tier of tiers) {
+    const picked = seoFirstFitting(tier, targetBody) ?? seoFirstFitting(tier, hardBody);
+    if (picked !== undefined) return picked;
+  }
+  throw new Error(`Ninguna variante de título cabe en ${SEO_TITLE_HARD_MAX} caracteres: ${JSON.stringify(tiers)}`);
+}
+
+function seoFillDescription(variant: string, fillers: readonly string[]): string {
+  let text = variant;
+  for (const filler of fillers) {
+    if (text.length >= SEO_DESCRIPTION_MIN) break;
+    const extended = joinSentences(text, filler);
+    if (extended.length <= SEO_DESCRIPTION_MAX) text = extended;
+  }
+  return text;
+}
+
+function seoIsValidDescription(text: string): boolean {
+  return text.length >= SEO_DESCRIPTION_MIN && text.length <= SEO_DESCRIPTION_MAX;
+}
+
+/**
+ * Elige la descripción: recorre las variantes de la más rica a la más corta, completa con frases de
+ * relleno las que se quedan por debajo de 120 caracteres y devuelve la primera que queda entre 120 y 160.
+ * Lanza un error si ninguna lo consigue.
+ */
+export function fitDescription(variants: readonly string[], fillers: readonly string[]): string {
+  for (const variant of variants) {
+    const text = seoFillDescription(variant, fillers);
+    if (seoIsValidDescription(text)) return text;
+  }
+  throw new Error(
+    `Ninguna variante de descripción queda entre ${SEO_DESCRIPTION_MIN} y ${SEO_DESCRIPTION_MAX} caracteres: ${JSON.stringify(variants)}`,
+  );
 }

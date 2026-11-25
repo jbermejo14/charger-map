@@ -4,9 +4,7 @@ import type { StationRecord } from '../src/lib/types';
 import {
   distanceKm,
   formatMunicipalityName,
-  stationMetaTitle,
   SAME_SITE_MAX_KM,
-  META_TITLE_MAX_LENGTH,
   nearbyStations,
   stationDisplayTitle,
   stationSummary,
@@ -173,18 +171,4 @@ describe('formatMunicipalityName', () => {
       assert.equal(formatMunicipalityName(input), expected);
     });
   }
-});
-
-describe('stationMetaTitle', () => {
-  it('usa el título completo si cabe en el límite', () => {
-    const station = makeStation('a');
-    assert.ok(stationDisplayTitle(station).length <= META_TITLE_MAX_LENGTH);
-    assert.equal(stationMetaTitle(station), stationDisplayTitle(station));
-  });
-
-  it('usa el título sin operador si no cabe', () => {
-    const station = makeStation('a', { operador: 'Operador con un nombre larguísimo S.L.', municipio: 'Barco de Ávila, El' });
-    assert.ok(stationDisplayTitle(station).length > META_TITLE_MAX_LENGTH);
-    assert.equal(stationMetaTitle(station), 'Punto de recarga en El Barco de Ávila · 22 kW');
-  });
 });

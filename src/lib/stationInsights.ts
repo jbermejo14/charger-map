@@ -12,8 +12,6 @@ export const ULTRA_CHARGE_MIN_KW = 150;
 
 /** Distancia en km (50 m) por debajo de la cual dos puntos son del mismo emplazamiento. */
 export const SAME_SITE_MAX_KM = 0.05;
-/** Longitud máxima del título del documento (65) menos el sufijo " | Ododex". */
-export const META_TITLE_MAX_LENGTH = 56;
 
 const EARTH_RADIUS_KM = 6371;
 const RADIANS_PER_DEGREE = Math.PI / 180;
@@ -100,21 +98,15 @@ export function formatMunicipalityName(name: string): string {
   return name.split(ALTERNATIVE_NAME_SEPARATOR).map(insightsMoveArticle).join(ALTERNATIVE_NAME_SEPARATOR);
 }
 
-function insightsHasOperator(operator: string): boolean {
+/** Indica si el operador aporta información real (no vacío ni genérico). */
+export function stationHasOperator(operator: string): boolean {
   return !GENERIC_OPERATORS.has(operator.trim().toLowerCase());
 }
 
 /** Título legible de la ficha: "Punto de recarga {operador} en {municipio} · {kW} kW". */
 export function stationDisplayTitle(station: StationRecord): string {
-  const operator = insightsHasOperator(station.operador) ? ` ${readableOperatorName(station.operador)}` : '';
+  const operator = stationHasOperator(station.operador) ? ` ${readableOperatorName(station.operador)}` : '';
   return `Punto de recarga${operator} en ${formatMunicipalityName(station.municipio)} · ${formatKw(station.potencia_max_kw)} kW`;
-}
-
-/** Título del documento: el largo si cabe junto al sufijo del sitio; si no, uno sin operador. */
-export function stationMetaTitle(station: StationRecord): string {
-  const full = stationDisplayTitle(station);
-  if (full.length <= META_TITLE_MAX_LENGTH) return full;
-  return `Punto de recarga en ${formatMunicipalityName(station.municipio)} · ${formatKw(station.potencia_max_kw)} kW`;
 }
 
 function insightsCountSentence(count: number, municipality: string): string {
@@ -139,7 +131,8 @@ function insightsFastSentence(all: StationRecord[]): string {
   return `En el municipio hay ${fast} puntos de carga rápida (${threshold})`;
 }
 
-function insightsConnectorTypes(station: StationRecord): string[] {
+/** Tipos de conector del punto sin repetir, sin el texto entre paréntesis ni los desconocidos. */
+export function stationConnectorTypes(station: StationRecord): string[] {
   const types = station.conectores
     .map((raw) => raw.replace(/\s*\(.*\)\s*$/, '').trim())
     .filter((name) => name && name.toLowerCase() !== UNKNOWN_CONNECTOR);
@@ -156,7 +149,7 @@ function insightsConnectorSentence(station: StationRecord): string {
   const count = station.num_conectores;
   if (count <= 0) return '';
   const noun = count === 1 ? 'conector' : 'conectores';
-  const types = insightsConnectorTypes(station);
+  const types = stationConnectorTypes(station);
   if (types.length === 0) return `Dispone de ${count} ${noun}`;
   return `Dispone de ${count} ${noun} (${insightsJoinList(types)})`;
 }

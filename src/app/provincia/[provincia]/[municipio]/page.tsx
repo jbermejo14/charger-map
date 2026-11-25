@@ -8,6 +8,7 @@ import { InternalLink } from '@/components/InternalLink';
 import { NetworkLinks } from '@/components/NetworkLinks';
 import { municipalityNetworkKey } from '@/lib/network';
 import { absoluteUrl } from '@/lib/site';
+import { municipalityMetaDescription, municipalityMetaTitle } from '@/lib/pageSeoText';
 import { slugify } from '@/lib/slugs';
 import { toHomeStation, toMapPoint } from '@/lib/mapData';
 import ClientMap from '@/components/ClientMap';
@@ -48,8 +49,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const mun = prov.municipios.find((m) => m.slug === munSlug);
   if (!mun) return { title: 'Municipio no encontrado' };
 
-  const title = `Puntos de Recarga en ${mun.municipio} (${mun.count} Estaciones) | ${prov.provincia}`;
-  const description = `Directorio de ${mun.count} puntos de recarga para coches eléctricos en ${mun.municipio} (${prov.provincia}). Potencias, operadores, conectores Mennekes/CCS y ubicaciones exactas.`;
+  const title = municipalityMetaTitle(mun.municipio, prov.provincia);
+  const description = municipalityMetaDescription({
+    municipality: mun.municipio,
+    province: prov.provincia,
+    stations: getStationsByMunicipio(provSlug, munSlug),
+  });
 
   return {
     title,
