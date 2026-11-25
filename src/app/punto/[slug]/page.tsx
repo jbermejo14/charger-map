@@ -122,23 +122,6 @@ export default async function PuntoPage({ params }: PageProps) {
     },
     maximumOutput: `${station.potencia_max_kw} kW`,
     connectorType: station.conectores,
-    openingHours: station.horario && station.horario !== 'No especificado' ? station.horario : 'Mo-Su 00:00-23:59',
-    openingHoursSpecification: [
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday',
-        ],
-        opens: '00:00',
-        closes: '23:59',
-      },
-    ],
     provider: {
       '@type': 'Organization',
       name: readableOperatorName(station.operador),
@@ -204,7 +187,7 @@ export default async function PuntoPage({ params }: PageProps) {
 
           <div className="flex items-center gap-1.5">
             <Clock className="h-4 w-4 text-[var(--text-muted)] shrink-0" />
-            <span>{station.horario && station.horario !== 'No especificado' ? station.horario : '24 horas / Acceso público'}</span>
+            <span>{station.horario && station.horario !== 'No especificado' ? station.horario : 'Horario no especificado por el operador'}</span>
           </div>
         </div>
       </section>
